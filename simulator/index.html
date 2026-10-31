@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BEOMCHRO 놀티켓 초고속 대기열 시뮬레이터</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dark-theme">
+  <!-- 상단 네비게이션 -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <span class="brand-badge">PRO v2.0</span>
+        <span class="brand-name">BEOMCHRO <span class="highlight">SIMULATOR</span></span>
+      </div>
+      <div class="nav-status">
+        <div class="status-indicator" id="scriptStatus">
+          <span class="dot checking"></span>
+          <span class="text">유저스크립트 확인 중...</span>
+        </div>
+        <div class="server-time" id="serverClock">
+          <span class="clock-label">SYS CLOCK:</span>
+          <span class="clock-value" id="navTime">--:--:--.---</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- 시뮬레이터 조작 툴바 -->
+    <section class="control-panel card">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span>트리거 제어 패널 (대기열 오픈 시뮬레이션)</span>
+        </div>
+        <div class="panel-subtitle">오픈 정각 카운트다운을 시작하거나 즉시 활성화하여 반응속도를 테스트하세요.</div>
+      </div>
+      <div class="panel-actions">
+        <button id="btnCountdown5" class="action-btn">
+          <span class="btn-icon">⏱️</span> 5초 카운트다운
+        </button>
+        <button id="btnCountdown10" class="action-btn">
+          <span class="btn-icon">⏳</span> 10초 카운트다운
+        </button>
+        <button id="btnInstantOpen" class="action-btn urgent">
+          <span class="btn-icon">⚡</span> 즉시 오픈 (0ms 격발 테스트)
+        </button>
+        <button id="btnReset" class="action-btn secondary">
+          <span class="btn-icon">🔄</span> 리셋
+        </button>
+      </div>
+      <div class="countdown-display" id="countdownBanner">
+        <div class="timer-ring">
+          <span id="countdownNumber">READY</span>
+        </div>
+        <div class="timer-desc" id="timerStatusDesc">대기 중: 카운트다운 버튼을 눌러 테스트를 시작하세요.</div>
+      </div>
+    </section>
+
+    <!-- 티켓 예매 인터페이스 (놀티켓 1:1 클론 레이아웃) -->
+    <div class="ticket-workspace">
+      <!-- 좌측: 공연 포스터 및 정보 -->
+      <section class="poster-section card">
+        <div class="poster-badge">단독판매</div>
+        <div class="poster-art">
+          <div class="poster-glow"></div>
+          <div class="poster-content">
+            <div class="art-tag">NOL TICKET ORIGINAL</div>
+            <h1 class="art-title">2026 WORLD TOUR FINALE</h1>
+            <h2 class="art-subtitle">IN SEOUL : BEOMCHRO EDITION</h2>
+            <div class="art-meta">
+              <span>★ 잠실종합운동장 올림픽주경기장</span>
+              <span>★ 전석 지정좌석제 (VIP / R / S)</span>
+            </div>
+          </div>
+        </div>
+        <div class="event-details">
+          <div class="detail-row">
+            <span class="lbl">공연기간</span>
+            <span class="val">2026.11.14 (토) - 2026.11.15 (일)</span>
+          </div>
+          <div class="detail-row">
+            <span class="lbl">관람시간</span>
+            <span class="val">180분 (인터미션 20분 포함)</span>
+          </div>
+          <div class="detail-row">
+            <span class="lbl">관람연령</span>
+            <span class="val">만 7세 이상 관람가</span>
+          </div>
+          <div class="detail-row">
+            <span class="lbl">가격정보</span>
+            <span class="val">VIP석 198,000원 / R석 154,000원 / S석 121,000원</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 중앙/우측: 일정 선택 및 예매하기 버튼 -->
+      <section class="booking-section card">
+        <h3 class="section-title">관람 일정 및 회차 선택</h3>
+        
+        <div class="date-selector">
+          <div class="date-item active" data-date="2026-11-14">
+            <span class="day">11.14 토</span>
+            <span class="time">19:00 (1회차)</span>
+          </div>
+          <div class="date-item" data-date="2026-11-15">
+            <span class="day">11.15 일</span>
+            <span class="time">18:00 (2회차)</span>
+          </div>
+        </div>
+
+        <div class="seat-status-table">
+          <div class="table-header">
+            <span>좌석 등급</span>
+            <span>기본 가격</span>
+            <span>잔여석</span>
+          </div>
+          <div class="table-row">
+            <span class="grade vip"><span class="badge-dot vip"></span> VIP석</span>
+            <span>198,000원</span>
+            <span class="remain highlight">500석</span>
+          </div>
+          <div class="table-row">
+            <span class="grade r"><span class="badge-dot r"></span> R석</span>
+            <span>154,000원</span>
+            <span class="remain">1,800석</span>
+          </div>
+          <div class="table-row">
+            <span class="grade s"><span class="badge-dot s"></span> S석</span>
+            <span>121,000원</span>
+            <span class="remain">3,200석</span>
+          </div>
+        </div>
+
+        <div class="notice-box">
+          <div class="notice-title">⚠️ 예매 안내 및 대기열 수칙</div>
+          <p>• 예매 버튼은 정각 00.000초에 활성화되며 마이크로초 단위 접속 순번이 부여됩니다.</p>
+          <p>• BEOMCHRO 유저스크립트 활성화 시 버튼 DOM 변화를 포착해 0~1ms 만에 자동 클릭합니다.</p>
+        </div>
+
+        <!-- 핵심 타겟: 놀티켓 예매하기 버튼 -->
+        <div class="booking-action-container">
+          <button id="btn-booking" class="btn-booking-action disabled" disabled="disabled">
+            <span class="btn-spinner" id="btnSpinner"></span>
+            <span class="btn-text" id="bookingBtnText">예매 오픈 대기 중</span>
+            <span class="btn-subtext" id="bookingBtnSub">잠시 후 정각에 버튼이 활성화됩니다</span>
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- 반응속도 측정 로그 & 대기열 결과 -->
+    <section class="results-section card">
+      <div class="results-header">
+        <h3>⚡ 반응속도 & 대기열 선점 분석기</h3>
+        <span class="bench-badge" id="benchBadge">측정 대기</span>
+      </div>
+      
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-label">버튼 활성화 시각 (오픈)</div>
+          <div class="metric-value" id="metricOpenTime">--:--:--.---</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">예매 클릭 격발 시각</div>
+          <div class="metric-value" id="metricClickTime">--:--:--.---</div>
+        </div>
+        <div class="metric-card primary">
+          <div class="metric-label">반응 속도 (Latency)</div>
+          <div class="metric-value highlight" id="metricLatency">-- ms</div>
+        </div>
+        <div class="metric-card accent">
+          <div class="metric-label">부여된 가상 대기 순번</div>
+          <div class="metric-value queue-rank" id="metricQueueRank">대기 -- 번</div>
+        </div>
+      </div>
+
+      <!-- 이전 기록 리스트 -->
+      <div class="history-container">
+        <h4>최근 격발 기록</h4>
+        <div class="table-wrapper">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>방식</th>
+                <th>반응시간</th>
+                <th>대기 순번</th>
+                <th>예상 대기</th>
+                <th>판정 결과</th>
+                <th>기록 시각</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <tr class="empty-row">
+                <td colspan="7">아직 측정된 기록이 없습니다. 카운트다운을 시작해보세요!</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 대기열 진입 성공 모달 (놀티켓 스타일) -->
+  <div class="modal-backdrop" id="queueModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-logo">NOL TICKET QUEUE INTERCEPT</div>
+        <button class="modal-close" id="modalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="queue-icon-wrapper" id="queueStatusIcon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
+        <h2 id="modalQueueTitle">대기열 진입 완료!</h2>
+        <div class="queue-number-card">
+          <div class="q-label">나의 대기 번호</div>
+          <div class="q-number" id="modalQueueNumber">1번</div>
+          <div class="q-sub" id="modalQueueWaitTime">예상 대기 시간: 즉시 입장</div>
+        </div>
+        <div class="queue-details">
+          <div class="q-stat"><span>반응 시간:</span> <strong id="modalLatency">0.42 ms</strong></div>
+          <div class="q-stat"><span>격발 방식:</span> <strong id="modalTriggerType">BEOMCHRO 0ms 자동 인젝션</strong></div>
+          <div class="q-stat"><span>진입 등급:</span> <strong id="modalTier" class="tier-god">신(GOD)의 손</strong></div>
+        </div>
+        <p class="queue-desc" id="modalDesc">축하합니다! 오픈 1ms 미만의 초고속 인터셉트로 최우선 순번을 선점하였습니다.</p>
+        <button class="btn-confirm" id="modalConfirmBtn">확인 및 다시 연습</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>BEOMCHRO Hybrid Queue Interceptor Engine v2.0 • For High-Performance Benchmark & Simulation Only</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
