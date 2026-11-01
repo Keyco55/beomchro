@@ -44,3 +44,8 @@ Thumbs.db
 
 # Logs & Runtime
 *.log
+.browser_profile/
+build/
+dist/
+*.spec
+

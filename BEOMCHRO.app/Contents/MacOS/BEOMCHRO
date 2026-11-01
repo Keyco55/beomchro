@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# BEOMCHRO macOS Native App Launcher
+APP_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
+cd "$APP_DIR"
+
+# Launch in native Terminal session with focus
+osascript <<EOF
+tell application "Terminal"
+    activate
+    do script "cd \"$APP_DIR\" && ./run_mac.sh"
+end tell
+EOF

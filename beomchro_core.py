@@ -16,6 +16,13 @@ import http.server
 import socketserver
 from pathlib import Path
 
+# Local Launcher Import
+try:
+    from beomchro_launcher import launch_browser, find_browser_executable
+except ImportError:
+    launch_browser = None
+    find_browser_executable = None
+
 # External Dependencies
 try:
     import requests
@@ -359,10 +366,10 @@ class BeomchroTUI:
         console.print()
 
         menu_panel = Panel(
-            "[bold white]1.[/bold white] 🚀 [bold cyan]로컬 연습 시뮬레이터 구동 & 브라우저 열기[/bold cyan]\n"
+            "[bold white]1.[/bold white] 🚀 [bold green]원클릭 0ms 티켓팅 브라우저 실행 (확장프로그램 무설치 자동 장착)[/bold green]\n"
             "[bold white]2.[/bold white] 🎯 [bold yellow]화면 픽셀 색상 감시 모드 (Pixel Color Watcher)[/bold yellow]\n"
             "[bold white]3.[/bold white] ⏰ [bold magenta]서버 시간 정각 자동 클릭 모드 (Exact Time Trigger)[/bold magenta]\n"
-            "[bold white]4.[/bold white] ⚡ [bold green]마우스 초고속 격발 벤치마크 (0.1ms 테스트)[/bold green]\n"
+            "[bold white]4.[/bold white] ⚡ [bold cyan]마우스 초고속 격발 벤치마크 (0.1ms 테스트)[/bold cyan]\n"
             "[bold white]5.[/bold white] 🩺 [bold blue]시스템 종합 진단 (Doctor Checklist)[/bold blue]\n"
             "[bold white]0.[/bold white] ❌ [bold red]종료 (Exit)[/bold red]",
             title="[bold yellow]동작 모드 선택 (Operation Mode)[/bold yellow]",
@@ -375,17 +382,30 @@ class BeomchroTUI:
     def run_mode_simulator(self, auto_open=True):
         console.print("\n[bold cyan]🚀 로컬 연습 시뮬레이터 서버 시작 중...[/bold cyan]")
         self.server.start()
-        time.sleep(0.5)
+        time.sleep(0.4)
         self.time_sync.sync()
 
         sim_url = f"http://localhost:{self.port}"
         console.print(f"[bold green]✔ 로컬 시뮬레이터가 성공적으로 실행되었습니다: {sim_url}[/bold green]")
         
         if auto_open:
-            console.print("[dim]웹 브라우저를 자동으로 실행합니다...[/dim]")
-            webbrowser.open(sim_url)
+            console.print("[bold yellow]⚡ 0ms 인젝터 확장 프로그램이 자동 장착된 전용 브라우저를 띄웁니다...[/bold yellow]")
+            launched = False
+            if launch_browser:
+                try:
+                    proc = launch_browser(target_urls=[sim_url, "https://ticket.nol.com"])
+                    if proc:
+                        console.print(f"[bold green]✔ 브라우저 자동 실행 완료! (Tampermonkey 설치 전혀 불필요)[/bold green]")
+                        console.print("[dim]브라우저 우측 상단에 ⚡ BEOMCHRO 0ms READY 배너가 표시됩니다.[/dim]")
+                        launched = True
+                except Exception as e:
+                    console.print(f"[yellow]⚠️ 전용 브라우저 런처 경고: {e}[/yellow]")
+            
+            if not launched:
+                console.print("[dim]기본 브라우저로 접속합니다...[/dim]")
+                webbrowser.open(sim_url)
 
-        console.print("\n[bold yellow]TIP:[/bold yellow] 브라우저에 Tampermonkey 및 [bold cyan]beomchro_queue.user.js[/bold cyan]를 등록하면 0ms 자동 인젝션이 작동합니다.")
+        console.print("\n[bold cyan]💡 TIP:[/bold cyan] 로그인/본인인증 정보는 브라우저 프로필에 영구 보존됩니다.")
         console.print("[dim]메인 메뉴로 돌아가려면 Enter를 누르세요.[/dim]")
         input()
 
@@ -503,6 +523,10 @@ class BeomchroTUI:
         has_js = (sim_dir / "script.js").exists()
         sim_all = has_index and has_css and has_js
         table.add_row("시뮬레이터 웹 에셋", "[green]PASS[/green]" if sim_all else "[red]FAIL[/red]", f"index={has_index}, css={has_css}, js={has_js}")
+
+        # 4. Zero-Setup Extension & UserScript
+        ext_manifest = Path(__file__).parent / "extension" / "manifest.json"
+        table.add_row("무설치 확장프로그램 (Extension)", "[green]PASS[/green]" if ext_manifest.exists() else "[red]FAIL[/red]", "Zero-Setup 자동 장착 지원")
 
         userscript = Path(__file__).parent / "beomchro_queue.user.js"
         table.add_row("Tampermonkey 유저스크립트", "[green]PASS[/green]" if userscript.exists() else "[red]FAIL[/red]", str(userscript.name))
