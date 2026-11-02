@@ -1,18 +1,20 @@
 /**
- * BEOMCHRO Manifest V3 Content Script
- * 0ms Ultra Queue Interceptor Engine
+ * BEOMCHRO Manifest V3 Content Script v2.1
+ * 0ms Ultra Queue Interceptor Engine with Interactive ON/OFF Control & Visual Target Lock
  */
 
 (() => {
   'use strict';
+
+  if (window.__BEOMCHRO_INITIALIZED__) return;
+  window.__BEOMCHRO_INITIALIZED__ = true;
 
   // Inject execution flag into the main world page context
   try {
     const script = document.createElement('script');
     script.textContent = `
       window.__BEOMCHRO_ACTIVE__ = true;
-      window.__BEOMCHRO_VERSION__ = '2.0.0 (Native Extension)';
-      console.log('%c[BEOMCHRO] ⚡ Extension Main World Activated', 'background:#0066ff; color:#fff; font-weight:bold; padding:2px 6px; border-radius:3px;');
+      window.__BEOMCHRO_VERSION__ = '2.1.0';
     `;
     (document.head || document.documentElement).appendChild(script);
     script.remove();
@@ -21,18 +23,21 @@
   }
 
   window.__BEOMCHRO_ACTIVE__ = true;
-  window.__BEOMCHRO_VERSION__ = '2.0.0 (Native Extension)';
-
-  console.log('%c[BEOMCHRO] ⚡ 0ms Zero-Setup Queue Interceptor Active', 'background:#0066ff; color:#fff; font-weight:bold; padding:4px 8px; border-radius:4px;');
+  window.__BEOMCHRO_VERSION__ = '2.1.0';
 
   // State
+  let isEnabled = true;
   let hasTriggered = false;
   let observer = null;
   let hudEl = null;
+  let currentLockedEl = null;
 
-  // Supported Selectors for NOL Ticket & Local Simulator
-  const TARGET_SELECTORS = [
+  // Primary Gate & Booking Button Selectors (Matches real Interpark/NOL Gate DOM & Simulator)
+  const GATE_BUTTON_SELECTORS = [
     '#btn-booking',
+    '.buttons button[class*="_button_"]',
+    '.buttons button',
+    'button[class*="_button_"][class*="_primary_"]',
     '.btn-booking-action',
     '#ticketReservationBtn',
     'a.btn_reserve',
@@ -42,160 +47,320 @@
     'a[onclick*="reserve"]'
   ];
 
-  // Create Lightweight HUD Banner
+  function syncMainWorldFlag() {
+    window.__BEOMCHRO_ACTIVE__ = isEnabled;
+    try {
+      document.documentElement.setAttribute('data-beomchro-enabled', isEnabled ? 'true' : 'false');
+    } catch (e) {}
+  }
+  syncMainWorldFlag();
+
+  // Find target gate button on page (even while disabled before open)
+  function findTargetButton() {
+    for (const sel of GATE_BUTTON_SELECTORS) {
+      const el = document.querySelector(sel);
+      if (el) return el;
+    }
+    return null;
+  }
+
+  // Check if target button has transitioned from "Waiting/Disabled" to "OPEN/Enabled"
+  function isButtonReadyToClick(el) {
+    if (!el) return false;
+    if (el.hasAttribute('disabled') || el.disabled === true) return false;
+    if (el.getAttribute('aria-disabled') === 'true') return false;
+
+    const cls = typeof el.className === 'string' ? el.className : '';
+    if (/disabled/i.test(cls)) return false;
+
+    const txt = (el.textContent || '').trim();
+    if (/남은\s*시간|오픈\s*대기|오픈\s*예정|잠시\s*후/.test(txt)) return false;
+
+    return true;
+  }
+
+  // Highlight the locked button on the page so user has 100% visual certainty
+  function updateTargetHighlight() {
+    const target = findTargetButton();
+    currentLockedEl = target;
+
+    const statusEl = document.getElementById('beomchro-target-status');
+    const guideEl = document.getElementById('beomchro-action-guide');
+
+    if (!target) {
+      // Check if we are on the NOL Ticket game list page
+      const listBtns = document.querySelectorAll('.joint-rectangle-button--variant_outlined_primary, .game-cta-btn');
+      if (statusEl) {
+        if (listBtns.length > 0) {
+          statusEl.innerHTML = `<span style="color:#38bdf8;">📋 경기 목록 화면 감지됨 (${listBtns.length}개 경기)</span>`;
+          if (guideEl) {
+            guideEl.textContent = '💡 원하는 경기의 [예매하기]를 눌러 오픈 대기(게이트) 화면으로 들어가세요.';
+          }
+        } else {
+          statusEl.innerHTML = `<span style="color:#94a3b8;">🔍 예매 게이트 버튼 탐색 중...</span>`;
+        }
+      }
+      return;
+    }
+
+    const btnText = (target.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 28) || '예매 버튼';
+    const ready = isButtonReadyToClick(target);
+
+    // Apply visual target lock ring on the target button
+    if (isEnabled && !hasTriggered) {
+      target.style.outline = '3px solid #00f0ff';
+      target.style.outlineOffset = '3px';
+      target.setAttribute('data-beomchro-locked', 'true');
+    } else if (!isEnabled) {
+      target.style.outline = '2px dashed #64748b';
+      target.style.outlineOffset = '3px';
+      target.setAttribute('data-beomchro-locked', 'paused');
+    }
+
+    if (statusEl && !hasTriggered) {
+      if (!isEnabled) {
+        statusEl.innerHTML = `<span style="color:#94a3b8;">⏸ 조준 일시정지됨: [${btnText}] (우측 위 ON 버튼을 켜세요)</span>`;
+      } else if (!ready) {
+        statusEl.innerHTML = `<span style="color:#00f0ff;">🎯 타겟 조준 완료: <strong>[${btnText}]</strong> (오픈 대기 감시 중)</span>`;
+      } else {
+        statusEl.innerHTML = `<span style="color:#10b981;">⚡ 버튼 오픈 감지됨: <strong>[${btnText}]</strong></span>`;
+      }
+    }
+  }
+
+  // Create Interactive Control Widget HUD at top-right
   function createHUD() {
     if (hudEl || !document.body) return;
 
     hudEl = document.createElement('div');
     hudEl.id = 'beomchro-hud';
     hudEl.innerHTML = `
-      <div style="
+      <div id="beomchro-hud-box" style="
         position: fixed;
         top: 14px;
-        right: 18px;
+        right: 16px;
         z-index: 2147483647;
-        background: rgba(10, 14, 23, 0.94);
-        border: 1px solid #00f0ff;
-        box-shadow: 0 4px 25px rgba(0, 240, 255, 0.45);
-        color: #f0f4fc;
-        padding: 9px 16px;
-        border-radius: 9px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+        width: 340px;
+        background: rgba(10, 14, 24, 0.96);
+        border: 2px solid #00f0ff;
+        box-shadow: 0 8px 30px rgba(0, 240, 255, 0.35);
+        color: #f8fafc;
+        padding: 12px 14px;
+        border-radius: 12px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard', sans-serif;
         font-size: 12px;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 9px;
-        backdrop-filter: blur(10px);
-        pointer-events: none;
-        transition: all 0.3s ease;
+        line-height: 1.45;
+        backdrop-filter: blur(12px);
+        user-select: none;
+        transition: all 0.2s ease;
       ">
-        <span style="display:inline-block; width:9px; height:9px; border-radius:50%; background:#00f0ff; box-shadow:0 0 10px #00f0ff; animation: beomchroPulse 1.2s infinite;"></span>
-        <span id="beomchro-hud-text">⚡ BEOMCHRO EXTENSION 0ms READY</span>
+        <!-- Top Row: Status Dot + Title + ON/OFF Switch -->
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">
+          <div style="display:flex; align-items:center; gap:7px;">
+            <span id="beomchro-hud-dot" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#10b981; box-shadow:0 0 10px #10b981; animation: beomchroPulse 1s infinite;"></span>
+            <span id="beomchro-hud-title" style="font-weight:800; font-size:13px; color:#ffffff; letter-spacing:-0.2px;">⚡ BEOMCHRO 0ms 엔진</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:5px;">
+            <button id="beomchro-test-btn" type="button" style="
+              background: rgba(255,255,255,0.1);
+              color: #e2e8f0;
+              border: 1px solid rgba(255,255,255,0.2);
+              border-radius: 6px;
+              padding: 4px 8px;
+              font-size: 11px;
+              font-weight: 700;
+              cursor: pointer;
+            " title="현재 버튼 조준 상태를 화면에서 확인합니다">🔍 작동확인</button>
+            <button id="beomchro-toggle-btn" type="button" style="
+              background: linear-gradient(135deg, #10b981, #059669);
+              color: #ffffff;
+              border: none;
+              border-radius: 6px;
+              padding: 4px 10px;
+              font-size: 11px;
+              font-weight: 800;
+              cursor: pointer;
+              box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+            ">🟢 ON (작동중)</button>
+          </div>
+        </div>
+
+        <!-- Middle Row: Live Target Lock Status -->
+        <div id="beomchro-target-status" style="
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 7px;
+          padding: 6px 9px;
+          font-size: 11.5px;
+          font-weight: 600;
+          margin-bottom: 7px;
+          color: #00f0ff;
+        ">🎯 타겟 버튼 탐색 중...</div>
+
+        <!-- Bottom Row: Clear User Instruction (Solves Question 2!) -->
+        <div id="beomchro-action-guide" style="
+          background: rgba(245, 158, 11, 0.14);
+          border-left: 3px solid #f59e0b;
+          border-radius: 4px;
+          padding: 5px 8px;
+          font-size: 11px;
+          color: #fde68a;
+          font-weight: 600;
+        ">✋ <strong>직접 누르거나 마우스를 올려두지 마세요!</strong><br>정각(00:00) 오픈 즉시 프로그램이 0ms로 자동 클릭합니다.</div>
       </div>
       <style>
         @keyframes beomchroPulse {
-          0% { opacity: 0.35; transform: scale(0.85); }
+          0% { opacity: 0.35; transform: scale(0.88); }
           50% { opacity: 1; transform: scale(1.15); }
-          100% { opacity: 0.35; transform: scale(0.85); }
+          100% { opacity: 0.35; transform: scale(0.88); }
+        }
+        @keyframes beomchroFlash {
+          0%, 100% { box-shadow: 0 0 0 4px #00f0ff, 0 0 30px #00f0ff; }
+          50% { box-shadow: 0 0 0 8px #f59e0b, 0 0 50px #f59e0b; }
         }
       </style>
     `;
     document.body.appendChild(hudEl);
-  }
 
-  // Update HUD status
-  function updateHUD(text, isSuccess) {
-    const textEl = document.getElementById('beomchro-hud-text');
-    if (textEl) {
-      textEl.textContent = text;
-      if (isSuccess) {
-        textEl.style.color = '#10b981';
-      }
+    // Bind ON / OFF Toggle Button
+    const toggleBtn = document.getElementById('beomchro-toggle-btn');
+    const testBtn = document.getElementById('beomchro-test-btn');
+    const boxEl = document.getElementById('beomchro-hud-box');
+    const dotEl = document.getElementById('beomchro-hud-dot');
+    const guideEl = document.getElementById('beomchro-action-guide');
+
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isEnabled = !isEnabled;
+        syncMainWorldFlag();
+
+        if (isEnabled) {
+          hasTriggered = false;
+          toggleBtn.textContent = '🟢 ON (작동중)';
+          toggleBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+          toggleBtn.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.4)';
+          boxEl.style.borderColor = '#00f0ff';
+          dotEl.style.background = '#10b981';
+          dotEl.style.boxShadow = '0 0 10px #10b981';
+          dotEl.style.animation = 'beomchroPulse 1s infinite';
+          guideEl.innerHTML = '✋ <strong>직접 누르거나 마우스를 올려두지 마세요!</strong><br>정각(00:00) 오픈 즉시 프로그램이 0ms로 자동 클릭합니다.';
+          updateTargetHighlight();
+          scanAndTrigger();
+        } else {
+          toggleBtn.textContent = '⚪ OFF (정지됨)';
+          toggleBtn.style.background = '#475569';
+          toggleBtn.style.boxShadow = 'none';
+          boxEl.style.borderColor = '#64748b';
+          dotEl.style.background = '#94a3b8';
+          dotEl.style.boxShadow = 'none';
+          dotEl.style.animation = 'none';
+          guideEl.innerHTML = '⏸ <strong>자동 격발이 꺼져 있습니다 (수동 모드)</strong><br>다시 자동 클릭을 켜려면 우측 위 [OFF] 버튼을 눌러 ON으로 바꾸세요.';
+          updateTargetHighlight();
+        }
+      });
     }
+
+    if (testBtn) {
+      testBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        hasTriggered = false;
+        updateTargetHighlight();
+        const target = findTargetButton();
+        const statusEl = document.getElementById('beomchro-target-status');
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.style.animation = 'beomchroFlash 0.6s ease 3';
+          const btnText = (target.textContent || '').replace(/\s+/g, ' ').trim();
+          if (statusEl) {
+            statusEl.innerHTML = `<span style="color:#fde047;">✔ 작동 점검 정상! 현재 [${btnText}] 버튼을 0ms 조준 중입니다!</span>`;
+          }
+        } else {
+          if (statusEl) {
+            statusEl.innerHTML = `<span style="color:#fde047;">✔ 엔진 정상 작동 중! (예매 게이트 화면 진입 시 버튼을 자동 조준합니다)</span>`;
+          }
+        }
+      });
+    }
+
+    updateTargetHighlight();
   }
 
-  // Fast click dispatcher
+  // High-performance Single Click Dispatcher (Compatible with React 18 & Vanilla DOM)
   function fastClick(element) {
-    if (hasTriggered) return;
+    if (!isEnabled || hasTriggered) return;
     hasTriggered = true;
 
     const tStart = performance.now();
 
-    // 1. Native click()
     try {
+      const opts = { bubbles: true, cancelable: true, view: window, button: 0, buttons: 1 };
+      element.dispatchEvent(new PointerEvent('pointerdown', opts));
+      element.dispatchEvent(new MouseEvent('mousedown', opts));
+      element.dispatchEvent(new PointerEvent('pointerup', { ...opts, buttons: 0 }));
+      element.dispatchEvent(new MouseEvent('mouseup', { ...opts, buttons: 0 }));
       element.click();
     } catch (e) {
-      console.warn('[BEOMCHRO] Native click failed:', e);
-    }
-
-    // 2. Synthetic MouseEvents fallback
-    try {
-      const opts = { bubbles: true, cancelable: true, view: window, buttons: 1 };
-      element.dispatchEvent(new MouseEvent('mousedown', opts));
-      element.dispatchEvent(new MouseEvent('mouseup', opts));
-      element.dispatchEvent(new MouseEvent('click', opts));
-    } catch (e) {
-      console.error('[BEOMCHRO] Synthetic dispatch error:', e);
+      try {
+        element.click();
+      } catch (err) {
+        console.error('[BEOMCHRO] Click dispatch error:', err);
+      }
     }
 
     const tEnd = performance.now();
     const durationMs = (tEnd - tStart).toFixed(3);
 
-    console.log(`%c[BEOMCHRO] 🔥 INTERCEPT TRIGGERED! Delay: ${durationMs}ms`, 'background:#10b981; color:#fff; font-weight:bold; font-size:14px; padding:6px 12px; border-radius:4px;');
-    updateHUD(`🔥 0ms 격발 성공! (${durationMs}ms)`, true);
+    console.log(`%c[BEOMCHRO] 🔥 0ms INTERCEPT TRIGGERED! (${durationMs}ms)`, 'background:#10b981; color:#fff; font-weight:bold; font-size:14px; padding:6px 12px; border-radius:4px;');
 
-    if (observer) {
-      observer.disconnect();
-      observer = null;
+    const statusEl = document.getElementById('beomchro-target-status');
+    const guideEl = document.getElementById('beomchro-action-guide');
+    const boxEl = document.getElementById('beomchro-hud-box');
+    if (statusEl) {
+      statusEl.innerHTML = `<span style="color:#10b981; font-weight:800;">🔥 0ms 초고속 자동 격발 성공! (${durationMs}ms)</span>`;
+    }
+    if (guideEl) {
+      guideEl.innerHTML = `🎉 <strong>오픈 즉시 자동 클릭이 완료되었습니다!</strong><br>다시 감시하려면 [🔍 작동확인] 또는 리셋 버튼을 누르세요.`;
+    }
+    if (boxEl) {
+      boxEl.style.borderColor = '#10b981';
     }
   }
 
-  function isReady(el) {
-    if (!el) return false;
-    if (el.hasAttribute('disabled') || el.disabled === true) return false;
-    if (el.getAttribute('aria-disabled') === 'true') return false;
-    if (el.classList && el.classList.contains('disabled')) return false;
-    return true;
+  // Scan page and trigger if target gate button is ready
+  function scanAndTrigger() {
+    updateTargetHighlight();
+    if (!isEnabled || hasTriggered) return;
+
+    const target = findTargetButton();
+    if (target && isButtonReadyToClick(target)) {
+      fastClick(target);
+    }
   }
 
-  function scanAndTrigger() {
-    if (hasTriggered) return;
+  // MutationObserver for 0ms reaction to attribute or text changes
+  function startObserver() {
+    if (observer) return;
 
-    for (const sel of TARGET_SELECTORS) {
-      const el = document.querySelector(sel);
-      if (el && isReady(el)) {
-        fastClick(el);
+    observer = new MutationObserver(() => {
+      if (!isEnabled) {
+        updateTargetHighlight();
         return;
       }
-    }
-  }
-
-  function startObserver() {
-    if (observer || hasTriggered) return;
-
-    observer = new MutationObserver((mutations) => {
-      if (hasTriggered) return;
-
-      for (let i = 0; i < mutations.length; i++) {
-        const m = mutations[i];
-
-        if (m.type === 'attributes') {
-          const target = m.target;
-          for (const sel of TARGET_SELECTORS) {
-            if (target.matches && target.matches(sel)) {
-              if (isReady(target)) {
-                fastClick(target);
-                return;
-              }
-            }
-          }
-        }
-
-        if (m.addedNodes.length > 0) {
-          for (let j = 0; j < m.addedNodes.length; j++) {
-            const node = m.addedNodes[j];
-            if (node.nodeType === 1) {
-              for (const sel of TARGET_SELECTORS) {
-                if (node.matches && node.matches(sel) && isReady(node)) {
-                  fastClick(node);
-                  return;
-                }
-                const nested = node.querySelector && node.querySelector(sel);
-                if (nested && isReady(nested)) {
-                  fastClick(nested);
-                  return;
-                }
-              }
-            }
-          }
+      if (!hasTriggered) {
+        const target = findTargetButton();
+        if (target && isButtonReadyToClick(target)) {
+          fastClick(target);
+          return;
         }
       }
+      updateTargetHighlight();
     });
 
     observer.observe(document.documentElement || document, {
       childList: true,
       subtree: true,
+      characterData: true,
       attributes: true,
       attributeFilter: ['disabled', 'class', 'style', 'aria-disabled']
     });
@@ -203,8 +368,16 @@
 
   startObserver();
 
+  // Simulator custom events support
   window.addEventListener('beomchro:opened', () => {
     scanAndTrigger();
+  });
+
+  window.addEventListener('beomchro:reset', () => {
+    hasTriggered = false;
+    const boxEl = document.getElementById('beomchro-hud-box');
+    if (boxEl && isEnabled) boxEl.style.borderColor = '#00f0ff';
+    updateTargetHighlight();
   });
 
   if (document.readyState === 'loading') {
@@ -218,10 +391,18 @@
   }
 
   function pollLoop() {
-    if (hasTriggered) return;
-    scanAndTrigger();
+    if (!hudEl && document.body) createHUD();
+    if (isEnabled && !hasTriggered) {
+      const target = findTargetButton();
+      if (target && isButtonReadyToClick(target)) {
+        fastClick(target);
+      }
+    }
     requestAnimationFrame(pollLoop);
   }
   requestAnimationFrame(pollLoop);
+
+  // Periodic UI status refresh for countdown timers
+  setInterval(updateTargetHighlight, 250);
 
 })();

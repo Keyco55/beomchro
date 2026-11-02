@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "BEOMCHRO 0ms Ultra Queue Interceptor",
-  "version": "2.0.0",
-  "description": "놀티켓 & 로컬 시뮬레이터 0ms 초고속 대기열 자동 진입 엔진 (Zero-Setup)",
+  "version": "2.1.0",
+  "description": "NOL 티켓 & 인터파크 티켓 게이트 0ms 초고속 대기열 자동 진입 엔진 (ON/OFF 컨트롤 & 실시간 조준 표시)",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -13,8 +13,12 @@
       "matches": [
         "http://localhost/*",
         "http://127.0.0.1/*",
+        "file://*/*",
+        "*://nol.yanolja.com/*",
+        "*://*.yanolja.com/*",
         "*://ticket.nol.com/*",
         "*://*.nol.com/*",
+        "*://tickets.interpark.com/*",
         "*://ticket.interpark.com/*",
         "*://*.interpark.com/*"
       ],
@@ -24,6 +28,6 @@
     }
   ],
   "action": {
-    "default_title": "BEOMCHRO 0ms Interceptor Active"
+    "default_title": "BEOMCHRO 0ms Interceptor v2.1"
   }
 }

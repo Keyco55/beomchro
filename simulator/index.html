@@ -3,242 +3,249 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BEOMCHRO 놀티켓 초고속 대기열 시뮬레이터</title>
+  <title>2026 한국시리즈 7차전 KT vs 삼성 | NOL 티켓 예매 게이트 & 자체 테스트</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="dark-theme">
-  <!-- 상단 네비게이션 -->
-  <header class="navbar">
-    <div class="nav-container">
-      <div class="brand">
-        <span class="brand-badge">PRO v2.0</span>
-        <span class="brand-name">BEOMCHRO <span class="highlight">SIMULATOR</span></span>
+<body>
+
+  <!-- 상단 BEOMCHRO 내장 자체 테스트 컨트롤 바 -->
+  <section class="beomchro-test-bar">
+    <div class="test-bar-inner">
+      <div class="test-bar-left">
+        <span class="engine-badge">BEOMCHRO 자체 테스트 내장</span>
+        <div class="view-tabs">
+          <button type="button" id="tabGateView" class="view-tab active">🎯 게이트 화면 (7차전 오픈 대기)</button>
+          <button type="button" id="tabListView" class="view-tab">📋 NOL 티켓 한국시리즈 목록 (1~7차전)</button>
+        </div>
       </div>
-      <div class="nav-status">
-        <div class="status-indicator" id="scriptStatus">
-          <span class="dot checking"></span>
-          <span class="text">유저스크립트 확인 중...</span>
-        </div>
-        <div class="server-time" id="serverClock">
-          <span class="clock-label">SYS CLOCK:</span>
-          <span class="clock-value" id="navTime">--:--:--.---</span>
-        </div>
+
+      <div class="test-bar-actions">
+        <button type="button" id="btnCountdown5" class="ctrl-btn primary">⏱️ 5초 카운트다운 시작</button>
+        <button type="button" id="btnCountdown10" class="ctrl-btn">⏳ 10초 카운트다운</button>
+        <button type="button" id="btnInstantOpen" class="ctrl-btn accent">⚡ 즉시 오픈 (0ms 테스트)</button>
+        <button type="button" id="btnReset" class="ctrl-btn outline">🔄 대기 상태 리셋</button>
       </div>
     </div>
-  </header>
 
-  <main class="main-content">
-    <!-- 시뮬레이터 조작 툴바 -->
-    <section class="control-panel card">
-      <div class="panel-header">
-        <div class="panel-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-          <span>트리거 제어 패널 (대기열 오픈 시뮬레이션)</span>
-        </div>
-        <div class="panel-subtitle">오픈 정각 카운트다운을 시작하거나 즉시 활성화하여 반응속도를 테스트하세요.</div>
+    <!-- 친절한 행동 가이드 & 실시간 측정 전광판 -->
+    <div class="test-bar-sub">
+      <div class="user-faq-banner">
+        <span class="faq-pill">필독 안내</span>
+        <span><strong>정각에 직접 누르거나 마우스 커서를 올려두실 필요가 없습니다!</strong> [5초 카운트다운]을 누른 뒤 마우스에서 손을 떼고 계시면 정각(00:00)에 <strong>0ms로 자동 클릭</strong>됩니다. (우측 상단 ON/OFF 버튼으로 수동/자동 비교 가능)</span>
       </div>
-      <div class="panel-actions">
-        <button id="btnCountdown5" class="action-btn">
-          <span class="btn-icon">⏱️</span> 5초 카운트다운
-        </button>
-        <button id="btnCountdown10" class="action-btn">
-          <span class="btn-icon">⏳</span> 10초 카운트다운
-        </button>
-        <button id="btnInstantOpen" class="action-btn urgent">
-          <span class="btn-icon">⚡</span> 즉시 오픈 (0ms 격발 테스트)
-        </button>
-        <button id="btnReset" class="action-btn secondary">
-          <span class="btn-icon">🔄</span> 리셋
-        </button>
+      <div class="live-metrics">
+        <div class="m-item">오픈 시각: <strong id="metricOpenTime">--:--:--.---</strong></div>
+        <div class="m-item">격발 시각: <strong id="metricClickTime">--:--:--.---</strong></div>
+        <div class="m-item highlight">반응 속도: <strong id="metricLatency">-- ms</strong></div>
+        <div class="m-item rank">대기 순번: <strong id="metricQueueRank">대기 -- 번</strong></div>
       </div>
-      <div class="countdown-display" id="countdownBanner">
-        <div class="timer-ring">
-          <span id="countdownNumber">READY</span>
-        </div>
-        <div class="timer-desc" id="timerStatusDesc">대기 중: 카운트다운 버튼을 눌러 테스트를 시작하세요.</div>
-      </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- 티켓 예매 인터페이스 (놀티켓 1:1 클론 레이아웃) -->
-    <div class="ticket-workspace">
-      <!-- 좌측: 공연 포스터 및 정보 -->
-      <section class="poster-section card">
-        <div class="poster-badge">단독판매</div>
-        <div class="poster-art">
-          <div class="poster-glow"></div>
-          <div class="poster-content">
-            <div class="art-tag">NOL TICKET ORIGINAL</div>
-            <h1 class="art-title">2026 WORLD TOUR FINALE</h1>
-            <h2 class="art-subtitle">IN SEOUL : BEOMCHRO EDITION</h2>
-            <div class="art-meta">
-              <span>★ 잠실종합운동장 올림픽주경기장</span>
-              <span>★ 전석 지정좌석제 (VIP / R / S)</span>
+  <!-- ====================================================================
+       VIEW 1: 2026 한국시리즈 7차전 KT vs 삼성 (실제 인터파크/NOL 게이트 DOM 1:1 복제)
+       Saved from: https://tickets.interpark.com/gates/ticket/26014459
+       ==================================================================== -->
+  <div id="gateViewContainer" class="view-container active">
+    <div id="root">
+      <div class="_layout_9pygw_1">
+        <header class="_header_9pygw_48">
+          <div class="_mobileHeader_q2xux_1">
+            <button type="button" class="_backBtn_q2xux_40" id="btnBackToList" title="한국시리즈 경기 목록으로 돌아가기">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path fill="#1B1C1F" d="M15.598 3.338a.75.75 0 0 0-1.061 0l-8.132 8.131a.75.75 0 0 0 0 1.061l8.132 8.132a.75.75 0 0 0 1.06-1.06L7.998 12l7.6-7.602a.75.75 0 0 0 0-1.06"></path>
+              </svg>
+            </button>
+            <h2 class="gate-nav-title">NOL 티켓 | KBO 포스트시즌 예매 게이트</h2>
+          </div>
+        </header>
+
+        <main class="_main_9pygw_63">
+          <div class="_layout_1pxd8_1">
+            <div class="_header_1pxd8_22">
+              <h2 id="gateHeadline">예매는 오픈 시간부터 가능해요</h2>
+              <p class="gate-sub-desc" id="gateSubDesc">카운트다운이 00:00이 되면 아래 버튼이 [예매하기]로 즉시 전환됩니다.</p>
+            </div>
+
+            <div class="_body_1pxd8_47">
+              <div class="_productCard_1551m_1 _imageOnly_1551m_28">
+                <div class="_card_1551m_32">
+                  <!-- 2026 한국시리즈 공식 포스터 아트워크 (내장 SVG) -->
+                  <div class="_poster_1551m_17 poster-svg-wrap">
+                    <svg viewBox="0 0 360 440" xmlns="http://www.w3.org/2000/svg" class="ks-poster-svg">
+                      <defs>
+                        <linearGradient id="ksBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stop-color="#0b132b" />
+                          <stop offset="50%" stop-color="#1c2541" />
+                          <stop offset="100%" stop-color="#0f172a" />
+                        </linearGradient>
+                        <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stop-color="#f59e0b" />
+                          <stop offset="50%" stop-color="#fde047" />
+                          <stop offset="100%" stop-color="#d97706" />
+                        </linearGradient>
+                      </defs>
+                      <rect width="360" height="440" rx="16" fill="url(#ksBg)" />
+                      <circle cx="180" cy="185" r="125" fill="none" stroke="url(#goldGrad)" stroke-width="1.5" stroke-opacity="0.35" />
+                      <rect x="110" y="28" width="140" height="24" rx="12" fill="url(#goldGrad)" />
+                      <text x="180" y="44" text-anchor="middle" fill="#0f172a" font-size="11" font-weight="900" font-family="sans-serif">2026 KBO POSTSEASON</text>
+                      <text x="180" y="86" text-anchor="middle" fill="#ffffff" font-size="28" font-weight="900" font-family="sans-serif" letter-spacing="-0.5">2026 한국시리즈</text>
+                      <text x="180" y="112" text-anchor="middle" fill="#fde047" font-size="14" font-weight="800" font-family="sans-serif" letter-spacing="2">KOREAN SERIES</text>
+
+                      <!-- KT WIZ vs SAMSUNG LIONS Matchup Emblem -->
+                      <g transform="translate(42, 145)">
+                        <circle cx="58" cy="52" r="46" fill="#111827" stroke="#ef4444" stroke-width="3" />
+                        <text x="58" y="48" text-anchor="middle" fill="#ffffff" font-size="22" font-weight="900" font-family="sans-serif">KT</text>
+                        <text x="58" y="68" text-anchor="middle" fill="#f87171" font-size="11" font-weight="800" font-family="sans-serif">KT 위즈</text>
+
+                        <text x="138" y="60" text-anchor="middle" fill="url(#goldGrad)" font-size="22" font-weight="900" font-style="italic" font-family="sans-serif">VS</text>
+
+                        <circle cx="218" cy="52" r="46" fill="#1e3a8a" stroke="#3b82f6" stroke-width="3" />
+                        <text x="218" y="48" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="900" font-family="sans-serif">SAMSUNG</text>
+                        <text x="218" y="68" text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="800" font-family="sans-serif">삼성 라이온즈</text>
+                      </g>
+
+                      <rect x="30" y="330" width="300" height="78" rx="12" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.15)" />
+                      <text id="posterSeriesBadge" x="180" y="356" text-anchor="middle" fill="#38bdf8" font-size="15" font-weight="900" font-family="sans-serif">한국시리즈 7차전 (FINAL)</text>
+                      <text id="posterDateVenue" x="180" y="378" text-anchor="middle" fill="#e2e8f0" font-size="12" font-weight="700" font-family="sans-serif">2026. 11. 11(수) 18:30 | 수원KT위즈파크</text>
+                      <text x="180" y="396" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="600" font-family="sans-serif">OFFICIAL TICKET PARTNER : NOL 티켓</text>
+                    </svg>
+                  </div>
+                  <h3 id="gateMatchTitle">2026 한국시리즈 7차전 KT vs 삼성</h3>
+                  <p class="gate-match-meta" id="gateMatchMeta">11월 11일(수) 18:30 • 수원KT위즈파크</p>
+                </div>
+              </div>
+
+              <!-- 실제 인터파크/NOL 티켓 게이트 버튼 구조 (_button_4ncv0_1 _primary_2p3w6_7 _disabled_2p3w6_34) -->
+              <div class="buttons">
+                <button id="btn-booking" type="button" disabled="" class="_button_4ncv0_1 _primary_2p3w6_7 _disabled_2p3w6_34">
+                  <span class="_content_2p3w6_38" id="bookingBtnText">남은시간 00:05</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="event-details">
-          <div class="detail-row">
-            <span class="lbl">공연기간</span>
-            <span class="val">2026.11.14 (토) - 2026.11.15 (일)</span>
-          </div>
-          <div class="detail-row">
-            <span class="lbl">관람시간</span>
-            <span class="val">180분 (인터미션 20분 포함)</span>
-          </div>
-          <div class="detail-row">
-            <span class="lbl">관람연령</span>
-            <span class="val">만 7세 이상 관람가</span>
-          </div>
-          <div class="detail-row">
-            <span class="lbl">가격정보</span>
-            <span class="val">VIP석 198,000원 / R석 154,000원 / S석 121,000원</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- 중앙/우측: 일정 선택 및 예매하기 버튼 -->
-      <section class="booking-section card">
-        <h3 class="section-title">관람 일정 및 회차 선택</h3>
-        
-        <div class="date-selector">
-          <div class="date-item active" data-date="2026-11-14">
-            <span class="day">11.14 토</span>
-            <span class="time">19:00 (1회차)</span>
-          </div>
-          <div class="date-item" data-date="2026-11-15">
-            <span class="day">11.15 일</span>
-            <span class="time">18:00 (2회차)</span>
-          </div>
-        </div>
-
-        <div class="seat-status-table">
-          <div class="table-header">
-            <span>좌석 등급</span>
-            <span>기본 가격</span>
-            <span>잔여석</span>
-          </div>
-          <div class="table-row">
-            <span class="grade vip"><span class="badge-dot vip"></span> VIP석</span>
-            <span>198,000원</span>
-            <span class="remain highlight">500석</span>
-          </div>
-          <div class="table-row">
-            <span class="grade r"><span class="badge-dot r"></span> R석</span>
-            <span>154,000원</span>
-            <span class="remain">1,800석</span>
-          </div>
-          <div class="table-row">
-            <span class="grade s"><span class="badge-dot s"></span> S석</span>
-            <span>121,000원</span>
-            <span class="remain">3,200석</span>
-          </div>
-        </div>
-
-        <div class="notice-box">
-          <div class="notice-title">⚠️ 예매 안내 및 대기열 수칙</div>
-          <p>• 예매 버튼은 정각 00.000초에 활성화되며 마이크로초 단위 접속 순번이 부여됩니다.</p>
-          <p>• BEOMCHRO 유저스크립트 활성화 시 버튼 DOM 변화를 포착해 0~1ms 만에 자동 클릭합니다.</p>
-        </div>
-
-        <!-- 핵심 타겟: 놀티켓 예매하기 버튼 -->
-        <div class="booking-action-container">
-          <button id="btn-booking" class="btn-booking-action disabled" disabled="disabled">
-            <span class="btn-spinner" id="btnSpinner"></span>
-            <span class="btn-text" id="bookingBtnText">예매 오픈 대기 중</span>
-            <span class="btn-subtext" id="bookingBtnSub">잠시 후 정각에 버튼이 활성화됩니다</span>
-          </button>
-        </div>
-      </section>
-    </div>
-
-    <!-- 반응속도 측정 로그 & 대기열 결과 -->
-    <section class="results-section card">
-      <div class="results-header">
-        <h3>⚡ 반응속도 & 대기열 선점 분석기</h3>
-        <span class="bench-badge" id="benchBadge">측정 대기</span>
-      </div>
-      
-      <div class="metric-grid">
-        <div class="metric-card">
-          <div class="metric-label">버튼 활성화 시각 (오픈)</div>
-          <div class="metric-value" id="metricOpenTime">--:--:--.---</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">예매 클릭 격발 시각</div>
-          <div class="metric-value" id="metricClickTime">--:--:--.---</div>
-        </div>
-        <div class="metric-card primary">
-          <div class="metric-label">반응 속도 (Latency)</div>
-          <div class="metric-value highlight" id="metricLatency">-- ms</div>
-        </div>
-        <div class="metric-card accent">
-          <div class="metric-label">부여된 가상 대기 순번</div>
-          <div class="metric-value queue-rank" id="metricQueueRank">대기 -- 번</div>
-        </div>
-      </div>
-
-      <!-- 이전 기록 리스트 -->
-      <div class="history-container">
-        <h4>최근 격발 기록</h4>
-        <div class="table-wrapper">
-          <table class="history-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>방식</th>
-                <th>반응시간</th>
-                <th>대기 순번</th>
-                <th>예상 대기</th>
-                <th>판정 결과</th>
-                <th>기록 시각</th>
-              </tr>
-            </thead>
-            <tbody id="historyTableBody">
-              <tr class="empty-row">
-                <td colspan="7">아직 측정된 기록이 없습니다. 카운트다운을 시작해보세요!</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- 대기열 진입 성공 모달 (놀티켓 스타일) -->
-  <div class="modal-backdrop" id="queueModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <div class="modal-logo">NOL TICKET QUEUE INTERCEPT</div>
-        <button class="modal-close" id="modalClose">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="queue-icon-wrapper" id="queueStatusIcon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-        </div>
-        <h2 id="modalQueueTitle">대기열 진입 완료!</h2>
-        <div class="queue-number-card">
-          <div class="q-label">나의 대기 번호</div>
-          <div class="q-number" id="modalQueueNumber">1번</div>
-          <div class="q-sub" id="modalQueueWaitTime">예상 대기 시간: 즉시 입장</div>
-        </div>
-        <div class="queue-details">
-          <div class="q-stat"><span>반응 시간:</span> <strong id="modalLatency">0.42 ms</strong></div>
-          <div class="q-stat"><span>격발 방식:</span> <strong id="modalTriggerType">BEOMCHRO 0ms 자동 인젝션</strong></div>
-          <div class="q-stat"><span>진입 등급:</span> <strong id="modalTier" class="tier-god">신(GOD)의 손</strong></div>
-        </div>
-        <p class="queue-desc" id="modalDesc">축하합니다! 오픈 1ms 미만의 초고속 인터셉트로 최우선 순번을 선점하였습니다.</p>
-        <button class="btn-confirm" id="modalConfirmBtn">확인 및 다시 연습</button>
+        </main>
       </div>
     </div>
   </div>
 
-  <footer class="footer">
-    <p>BEOMCHRO Hybrid Queue Interceptor Engine v2.0 • For High-Performance Benchmark & Simulation Only</p>
-  </footer>
+  <!-- ====================================================================
+       VIEW 2: NOL 티켓 | 스포츠 | 한국시리즈 전체 경기 목록 (첨부 HTML 1:1 복제)
+       Saved from: https://nol.yanolja.com/ticket/genre/sports/postseason
+       ==================================================================== -->
+  <div id="listViewContainer" class="view-container">
+    <div class="nol-page-wrap">
+      <!-- NOL 티켓 상단 헤더 -->
+      <header class="nol-header">
+        <div class="nol-header-inner">
+          <div class="nol-logo-area">
+            <span class="nol-logo-text">NOL <span class="nol-sub">티켓</span></span>
+            <div class="nol-search-chip">
+              <span>스포츠 • <strong>2026 KBO 한국시리즈</strong></span>
+            </div>
+          </div>
+          <div class="nol-genre-tabs">
+            <span class="genre-chip">프로야구</span>
+            <span class="genre-chip">축구</span>
+            <span class="genre-chip">배구</span>
+            <span class="genre-chip">농구</span>
+            <span class="genre-chip active">한국시리즈</span>
+          </div>
+        </div>
+      </header>
 
+      <!-- 한국시리즈 배너 -->
+      <section class="nol-hero-banner">
+        <div class="nol-hero-content">
+          <span class="nol-postseason-tag">2026 KBO POSTSEASON</span>
+          <h1>2026 KBO 한국시리즈 공식 예매</h1>
+          <p>KT 위즈 vs 삼성 라이온즈 (7전 4선승제) • 각 경기 [예매하기] 클릭 시 게이트 대기 화면으로 이동합니다.</p>
+        </div>
+      </section>
+
+      <!-- 경기 일정 카드 리스트 (첨부 파일의 1차전 ~ 7차전 동일 데이터) -->
+      <section class="nol-game-list-section">
+        <div class="nol-section-tabs">
+          <span class="sec-tab active">예매하기 (7경기)</span>
+          <span class="sec-tab">관람안내</span>
+          <span class="sec-tab">좌석안내</span>
+        </div>
+
+        <div class="nol-game-list" id="nolGameList">
+          <!-- JS에서 1차전~7차전 렌더링 -->
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- 하단 최근 격발 테스트 기록 보드 -->
+  <section class="benchmark-history-section">
+    <div class="history-inner">
+      <div class="history-head">
+        <h3>📊 BEOMCHRO 자체 반응속도 & 대기열 순번 측정 기록</h3>
+        <span id="benchStatusBadge" class="status-pill">대기 중</span>
+      </div>
+      <div class="history-table-wrap">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>회차</th>
+              <th>선택 경기</th>
+              <th>격발 방식</th>
+              <th>반응 속도</th>
+              <th>부여된 대기 순번</th>
+              <th>예상 대기 시간</th>
+              <th>판정 등급</th>
+              <th>측정 시각</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <tr class="empty-row">
+              <td colspan="8">상단의 [⏱️ 5초 카운트다운 시작] 또는 [⚡ 즉시 오픈] 버튼을 눌러 0ms 자동 격발을 테스트해 보세요!</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 대기열 진입 결과 모달 (인터파크/NOL 티켓 대기열 창 1:1 재현) -->
+  <div class="modal-backdrop" id="queueModal">
+    <div class="modal-box">
+      <div class="modal-top-bar">
+        <span class="modal-brand">NOL 티켓 • 실시간 예매 대기열 시스템</span>
+        <button type="button" class="modal-close" id="modalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="queue-badge-top" id="modalTier">★ 신(GOD)의 영역 — 0ms 선점 성공</div>
+        <h2 id="modalQueueTitle">접속 인원이 많아 대기 중입니다</h2>
+        <p class="modal-game-subtitle" id="modalGameName">2026 한국시리즈 7차전 KT vs 삼성</p>
+
+        <div class="queue-rank-box">
+          <div class="q-label">나의 대기순번</div>
+          <div class="q-number" id="modalQueueNumber">1번</div>
+          <div class="q-wait" id="modalQueueWaitTime">예상 대기시간: 즉시 입장 (0초)</div>
+          <div class="q-progress-track">
+            <div class="q-progress-bar" id="modalProgressBar" style="width: 100%;"></div>
+          </div>
+        </div>
+
+        <div class="queue-stat-list">
+          <div class="q-row"><span>오픈 후 클릭 반응속도</span><strong id="modalLatency" class="c-cyan">0.12 ms</strong></div>
+          <div class="q-row"><span>클릭 격발 방식</span><strong id="modalTriggerType">BEOMCHRO 0ms 자동 인젝션 (ON)</strong></div>
+        </div>
+
+        <p class="queue-explain" id="modalDesc">축하합니다! 오픈과 동시에 0ms로 가로채어 1번 대기열을 선점했습니다.</p>
+        <div class="modal-btn-group">
+          <button type="button" class="btn-modal-primary" id="modalConfirmBtn">🔄 다시 5초 카운트다운 테스트하기</button>
+          <button type="button" class="btn-modal-secondary" id="modalCloseBtn2">창 닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/extension/content.js"></script>
+  <script src="../extension/content.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

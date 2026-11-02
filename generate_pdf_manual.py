@@ -225,14 +225,14 @@ def render_page_1():
     y += 22
 
     toc_items = [
-        ("PART 01", "핵심 원리 & 반응속도 비교", "수동 손클릭(350ms) vs 범크로(0ms) 대기 순번 차이", "P. 01", (2, 132, 199)),
+        ("PART 01", "핵심 원리 & 반응속도 비교", "수동 손클릭(340ms) vs 범크로(0ms) 대기 순번 차이", "P. 01", (2, 132, 199)),
         ("PART 02", "전체 진행 순서도 (Flowchart)", "다운로드부터 실전 격발까지 5단계 전체 흐름도", "P. 01", (2, 132, 199)),
         ("STEP 01", "프로그램 다운로드 & 압축 풀기", "GitHub에서 ZIP 파일 다운로드 및 폴더 압축 해제", "P. 02", (14, 165, 233)),
-        ("STEP 02", "필수 준비물 확인 (최초 1회)", "Chrome 브라우저 확인 및 Windows 파이썬 PATH 체크", "P. 02", (14, 165, 233)),
+        ("STEP 02", "파이썬 설치 불필요! 환경 안내", "Mac & Windows 모두 추가 설치 없이 즉시 실행 구조", "P. 02", (14, 165, 233)),
         ("STEP 03", "운영체제별 원클릭 실행 방법", "Mac(BEOMCHRO.app) & Windows(run_windows.bat)", "P. 03", (16, 185, 129)),
-        ("STEP 04", "0ms 전용 브라우저 자동 기동", "숫자 1 입력으로 무설치 확장프로그램 자동 장착 확인", "P. 03", (16, 185, 129)),
-        ("STEP 05", "사전 로그인 보존 & 모의 연습장", "로그인 영구 유지 원리(STEP 05) 및 연습장 1번 체험(STEP 06)", "P. 04", (99, 102, 241)),
-        ("STEP 07", "티켓팅 당일 D-Day 실전 타임라인", "오픈 15분 전~정각 00.000초 행동 요령 및 FAQ", "P. 05", (245, 158, 11)),
+        ("STEP 04", "ON/OFF 스위치 & 작동 확인법", "우측 상단 [🟢 ON/OFF] 버튼 및 타겟 조준 테두리 확인", "P. 03", (16, 185, 129)),
+        ("STEP 05", "로그인 보존 & 한국시리즈 연습장", "사전 로그인 유지 및 2026 한국시리즈 7차전 자체 테스트", "P. 04", (99, 102, 241)),
+        ("STEP 07", "티켓팅 당일 D-Day 실전 타임라인", "정각 행동 요령(마우스 손떼기!) 및 자주 묻는 질문(FAQ)", "P. 05", (245, 158, 11)),
     ]
 
     col_w = (CONTENT_W - 12) / 2.0
@@ -392,9 +392,9 @@ def render_page_2():
         text(st_t, rx + 13, cy + 8, w=rw - 20, h=16, size=9.5, weight="ExtraBold", color=(15, 23, 42))
         text(st_d, rx + 13, cy + 25, w=rw - 18, h=32, size=8.0, weight="Medium", color=(71, 85, 105), line_spacing=2.0)
 
-    # STEP 02: Prerequisites & Windows Python PATH Visual Guide
+    # STEP 02: Zero-Python Environment & Core Q&A Visual Guide
     y = mock_y + mock_h + 22
-    y = section_title("STEP 02", "컴퓨터 필수 준비물 확인 (최초 1회만 확인)", "별도의 확장프로그램 설치는 필요 없으며, 아래 2가지 기본 프로그램만 확인해 주세요.", y)
+    y = section_title("STEP 02", "실행 전 필수 체크 & 핵심 질문 2가지 완벽 해결!", "윈도우 파이썬 미설치 컴퓨터에서도 즉시 작동하며, 가장 많이 물어보시는 2가지 질문을 먼저 확인하세요.", y)
 
     # 2-Column Environment Check Cards
     card_w = (CONTENT_W - 12) / 2.0
@@ -404,49 +404,55 @@ def render_page_2():
     text("• Google Chrome (가장 권장)\n• 네이버 웨일(Whale) 또는 MS Edge\n※ 평소 사용하시는 브라우저가 깔려 있으면 준비 완료!", MARGIN_X + 12, y + 31, w=card_w - 24, h=38, size=8.0, weight="Medium", color=(71, 85, 105), line_spacing=1.8)
 
     cx2 = MARGIN_X + card_w + 12
-    rect(cx2, y, card_w, 72, r=8, fill=(255, 255, 255), stroke=(203, 213, 225), stroke_w=1.0)
-    badge("필수 준비물 2", cx2 + 12, y + 10, 68, 16, bg=(16, 185, 129), fg=(255, 255, 255), size=7.8, r=4)
-    text("🐍 파이썬 (Python 3.9 이상)", cx2 + 86, y + 10, w=165, h=18, size=10.2, weight="ExtraBold", color=(15, 23, 42))
-    text("• Mac: 기본 설치되어 있거나 실행 시 자동 안내됨\n• Windows: 미설치 시 python.org 접속 후 무료 설치\n※ Windows 설치 시 아래 그림의 체크박스를 꼭 확인하세요!", cx2 + 12, y + 31, w=card_w - 24, h=38, size=8.0, weight="Medium", color=(71, 85, 105), line_spacing=1.8)
+    rect(cx2, y, card_w, 72, r=8, fill=(255, 255, 255), stroke=(16, 185, 129), stroke_w=1.2)
+    badge("무설치 즉시 실행", cx2 + 12, y + 10, 74, 16, bg=(16, 185, 129), fg=(255, 255, 255), size=7.6, r=4)
+    text("🪟 파이썬(Python) 설치 불필요!", cx2 + 92, y + 10, w=160, h=18, size=10.2, weight="ExtraBold", color=(6, 95, 70))
+    text("• Windows: 파이썬이 없어도 내장 엔진으로 100% 즉시 작동!\n• Mac: BEOMCHRO.app 더블클릭 시 즉시 실행\n※ 복잡한 개발 프로그램 설치 없이 더블클릭만 하세요!", cx2 + 12, y + 31, w=card_w - 24, h=38, size=8.0, weight="Medium", color=(71, 85, 105), line_spacing=1.8)
 
-    # Windows Python Installer Visual Diagram
+    # Core Feedback Q1 & Q2 Visual Callout Card
     y += 84
-    rect(MARGIN_X, y, CONTENT_W, 198, r=10, fill=(255, 251, 235), stroke=(245, 158, 11), stroke_w=1.3)
-    badge("🪟 WINDOWS 주의사항", MARGIN_X + 14, y + 12, 108, 18, bg=(245, 158, 11), fg=(255, 255, 255), size=8.0, weight="ExtraBold", r=4)
-    text("윈도우에서 파이썬(python.org) 설치 시 반드시 [Add python.exe to PATH]를 체크하세요!", MARGIN_X + 128, y + 13, w=385, h=18, size=9.6, weight="ExtraBold", color=(146, 64, 14))
+    rect(MARGIN_X, y, CONTENT_W, 198, r=10, fill=(255, 251, 235), stroke=(245, 158, 11), stroke_w=1.4)
+    badge("🔥 실전 핵심 Q&A", MARGIN_X + 14, y + 12, 92, 18, bg=(239, 68, 68), fg=(255, 255, 255), size=8.0, weight="ExtraBold", r=4)
+    text("실제 사용자분들이 가장 궁금해하시는 핵심 질문 2가지! (티켓팅 전 필독)", MARGIN_X + 114, y + 13, w=395, h=18, size=9.8, weight="ExtraBold", color=(146, 64, 14))
 
-    # Installer Window Mockup inside the warning card
-    win_x = MARGIN_X + 16
-    win_y = y + 38
-    win_w = 290.0
-    win_h = 146.0
-    draw_window_frame(win_x, win_y, win_w, win_h, "🐍 Python 3.14 Setup (64-bit)", dark=False)
-    text("Install Python 3.14 (64-bit)", win_x + 16, win_y + 32, w=250, h=16, size=10.0, weight="ExtraBold", color=(15, 23, 42))
-    text("Select Install Now to install Python with default settings.", win_x + 16, win_y + 48, w=250, h=12, size=7.5, color=(100, 116, 139))
+    # Left Sub-card: Question 1 (ON/OFF & Target Check)
+    q1_x = MARGIN_X + 12
+    q1_y = y + 38
+    q_w = (CONTENT_W - 36) / 2.0
+    q_h = 148.0
+    rect(q1_x, q1_y, q_w, q_h, r=8, fill=(255, 255, 255), stroke=(14, 165, 233), stroke_w=1.2)
+    badge("질문 1", q1_x + 10, q1_y + 10, 42, 16, bg=(2, 132, 199), fg=(255, 255, 255), size=7.6, r=4)
+    text("작동 중인지 어떻게 아나요? (ON/OFF 스위치)", q1_x + 58, q1_y + 10, w=q_w - 66, h=16, size=8.8, weight="ExtraBold", color=(15, 23, 42))
+    text("우측 상단 컨트롤 박스에 직관적인 [🟢 ON / ⚪ OFF] 스위치와\n[🔍 작동확인] 버튼을 탑재했습니다!", q1_x + 12, q1_y + 31, w=q_w - 24, h=28, size=7.8, weight="SemiBold", color=(51, 65, 85), line_spacing=1.6)
 
-    # Install Now button inside installer mockup
-    rect(win_x + 16, win_y + 64, 258, 34, r=5, fill=(239, 246, 255), stroke=(59, 130, 246), stroke_w=1.2)
-    text("➡ Install Now  (② 체크 후 클릭!)", win_x + 24, win_y + 70, w=240, h=14, size=8.8, weight="ExtraBold", color=(29, 78, 216))
-    text("C:\\Users\\User\\AppData\\Local\\Programs\\Python...", win_x + 24, win_y + 84, w=240, h=10, size=6.8, color=(100, 116, 139))
+    # Mini HUD illustration inside Q1 card
+    rect(q1_x + 12, q1_y + 62, q_w - 24, 48, r=6, fill=(10, 14, 23), stroke=(0, 240, 255), stroke_w=1.2)
+    text("⚡ BEOMCHRO v2.1", q1_x + 20, q1_y + 68, w=90, h=12, size=7.2, weight="ExtraBold", color=(255, 255, 255))
+    badge("🔍 작동확인", q1_x + q_w - 118, q1_y + 67, 46, 13, bg=(30, 41, 59), fg=(226, 232, 240), size=6.5, r=3)
+    badge("🟢 ON (작동중)", q1_x + q_w - 68, q1_y + 67, 50, 13, bg=(5, 150, 105), fg=(255, 255, 255), size=6.5, r=3)
+    text("🎯 타겟 조준 완료: [남은시간 39:01] (파란 테두리 표시됨)", q1_x + 20, q1_y + 88, w=q_w - 40, h=14, size=7.0, weight="Bold", color=(110, 231, 183))
 
-    # Bottom checkboxes inside installer mockup
-    rect(win_x + 12, win_y + 108, 266, 28, r=5, fill=(254, 242, 242), stroke=(239, 68, 68), stroke_w=1.8)
-    rect(win_x + 20, win_y + 115, 13, 13, r=2, fill=(239, 68, 68))
-    text("✓", win_x + 20, win_y + 115, w=13, h=13, size=9.0, weight="Heavy", color=(255, 255, 255), align="center")
-    text("Add python.exe to PATH  (① 필수 체크!)", win_x + 39, win_y + 116, w=230, h=14, size=8.6, weight="ExtraBold", color=(185, 28, 28))
+    text("✔ 예매 버튼 주변에 파란색 네온 테두리가 쳐져 있으면\n   100% 정상 조준된 상태입니다! ([🔍 작동확인] 클릭 시 레이저 점검)", q1_x + 12, q1_y + 115, w=q_w - 24, h=28, size=7.5, weight="Bold", color=(3, 105, 161), line_spacing=1.5)
 
-    # Right explanation inside warning card
-    ex_x = win_x + win_w + 14
-    ex_w = CONTENT_W - win_w - 44
-    text("체크 순서 (단 10초 소요)", ex_x, win_y + 4, w=ex_w, h=16, size=9.5, weight="ExtraBold", color=(146, 64, 14))
-    text("1. https://www.python.org 접속 후\n   [Downloads]에서 설치 파일 실행\n\n2. 설치 첫 화면 맨 아래의\n   [✓] Add python.exe to PATH\n   체크박스를 먼저 클릭해 체크!\n\n3. 위쪽의 [Install Now]를 누르면\n   1분 안에 설치가 완료됩니다.", ex_x, win_y + 24, w=ex_w, h=120, size=8.2, weight="SemiBold", color=(120, 53, 15), line_spacing=2.2)
+    # Right Sub-card: Question 2 (Hands-Free at 00:00!)
+    q2_x = q1_x + q_w + 12
+    rect(q2_x, q1_y, q_w, q_h, r=8, fill=(255, 255, 255), stroke=(239, 68, 68), stroke_w=1.4)
+    badge("질문 2", q2_x + 10, q1_y + 10, 42, 16, bg=(239, 68, 68), fg=(255, 255, 255), size=7.6, r=4)
+    text("정각에 내가 누르나요? 마우스만 갖다 두나요?", q2_x + 58, q1_y + 10, w=q_w - 66, h=16, size=8.8, weight="ExtraBold", color=(185, 28, 28))
+    text("정답: 둘 다 아닙니다! 마우스에서 아예 손을 떼고 계세요!", q2_x + 12, q1_y + 31, w=q_w - 24, h=16, size=8.2, weight="ExtraBold", color=(220, 38, 38))
+    text("마우스 커서를 버튼 위에 올려두실 필요도 없고, 정각에 직접\n클릭하실 필요도 전혀 없습니다.", q2_x + 12, q1_y + 47, w=q_w - 24, h=26, size=7.6, weight="SemiBold", color=(51, 65, 85), line_spacing=1.5)
+
+    rect(q2_x + 12, q1_y + 76, q_w - 24, 36, r=6, fill=(254, 242, 242), stroke=(248, 113, 113), stroke_w=1.0)
+    text("✋ 직접 클릭 금지! (중복 클릭 시 대기열 튕김 위험)\n🖱️ 마우스 커서 위치 무관! (브라우저 내부 엔진이 직접 격발)", q2_x + 18, q1_y + 81, w=q_w - 36, h=26, size=7.4, weight="ExtraBold", color=(185, 28, 28), line_spacing=1.6)
+
+    text("✔ [🟢 ON (작동중)]만 켜두고 화면만 띄워두시면 정각(00:00)\n   버튼이 열리는 찰나 프로그램이 0ms로 자동 클릭합니다!", q2_x + 12, q1_y + 116, w=q_w - 24, h=28, size=7.5, weight="Bold", color=(21, 128, 61), line_spacing=1.5)
 
 
 # ==============================================================================
 # PAGE 3: STEP 03 (OS Launch Mockups) & STEP 04 (TUI -> 0ms Browser HUD Diagram)
 # ==============================================================================
 def render_page_3():
-    draw_page_chrome(3, 5, "STEP 03 프로그램 실행 & STEP 04 전용 브라우저 기동")
+    draw_page_chrome(3, 5, "STEP 03 프로그램 실행 & STEP 04 ON/OFF 상태창 확인")
 
     y = 46
     y = section_title("STEP 03", "운영체제별 원클릭 프로그램 실행 (더블클릭!)", "압축을 푼 폴더 안에서 내 컴퓨터 운영체제(Mac 또는 Windows)에 맞는 파일을 더블클릭합니다.", y)
@@ -485,7 +491,7 @@ def render_page_3():
     rect(wx, y, card_w, card_h, r=10, fill=(255, 255, 255), stroke=(16, 185, 129), stroke_w=1.4)
     grad_rect(wx, y, card_w, 30, 10, (6, 78, 59), (16, 185, 129), angle=0)
     rect(wx, y + 18, card_w, 12, r=0, fill=(6, 78, 59))
-    text("🪟 Windows 10 / 11 실행 방법", wx + 14, y + 8, w=card_w - 28, h=16, size=10.0, weight="ExtraBold", color=(255, 255, 255))
+    text("🪟 Windows 10 / 11 실행 방법 (파이썬 불필요!)", wx + 14, y + 8, w=card_w - 28, h=16, size=10.0, weight="ExtraBold", color=(255, 255, 255))
 
     # Explorer mockup inside Windows card
     draw_window_frame(wx + 12, y + 40, card_w - 24, 106, "📁 beomchro-main (파일 탐색기)", dark=False)
@@ -493,80 +499,85 @@ def render_page_3():
     rect(wx + 26, y + 75, 24, 24, r=5, fill=(6, 78, 59))
     text("⚙", wx + 26, y + 79, w=24, h=18, size=12, color=(52, 211, 153), align="center")
     text("run_windows.bat", wx + 56, y + 75, w=115, h=14, size=9.2, weight="ExtraBold", color=(15, 23, 42))
-    text("Windows 배치 파일 • 더블클릭!", wx + 56, y + 88, w=130, h=12, size=7.4, weight="Bold", color=(5, 150, 105))
+    text("무설치 원클릭 실행기 • 더블클릭!", wx + 56, y + 88, w=130, h=12, size=7.4, weight="Bold", color=(5, 150, 105))
     badge("더블클릭!", wx + card_w - 76, y + 79, 50, 16, bg=(239, 68, 68), fg=(255, 255, 255), size=7.5, r=4)
 
     rect(wx + 20, y + 108, card_w - 40, 28, r=5, fill=(248, 250, 252))
-    text("📦 build_windows.bat  (단일 .exe 생성기)", wx + 28, y + 116, w=190, h=14, size=8.0, weight="SemiBold", color=(71, 85, 105))
+    text("⚡ beomchro_win_native.ps1  (윈도우 내장 엔진)", wx + 28, y + 116, w=195, h=14, size=8.0, weight="SemiBold", color=(71, 85, 105))
 
     # Windows Tip Box
     rect(wx + 12, y + 154, card_w - 24, 82, r=7, fill=(240, 253, 244), stroke=(187, 247, 208), stroke_w=1.0)
-    text("💡 윈도우 파란색 보호 창(SmartScreen)이 뜰 때", wx + 20, y + 161, w=card_w - 40, h=14, size=8.6, weight="ExtraBold", color=(22, 101, 52))
-    text("1. 'Windows의 PC 보호' 창에서 [추가 정보] 글자를 클릭합니다.\n2. 아래쪽에 나타나는 [실행] 버튼을 클릭합니다.\n3. 필요한 패키지가 자동으로 설치된 후 대시보드 창이 열립니다.", wx + 20, y + 177, w=card_w - 36, h=55, size=7.7, weight="Medium", color=(20, 83, 45), line_spacing=1.8)
+    text("💡 파이썬 미설치 PC에서도 100% 즉시 작동합니다!", wx + 20, y + 161, w=card_w - 40, h=14, size=8.6, weight="ExtraBold", color=(22, 101, 52))
+    text("1. 파이썬이 없는 윈도우 PC에서는 윈도우 기본 내장 엔진이\n   자동으로 가동되어 별도 프로그램 설치 없이 즉시 실행됩니다!\n2. 파란 보호창(SmartScreen)이 뜨면 [추가 정보] ➔ [실행] 클릭!", wx + 20, y + 177, w=card_w - 36, h=55, size=7.7, weight="Medium", color=(20, 83, 45), line_spacing=1.8)
 
     # STEP 04: TUI Dashboard -> Auto-Mounted 0ms Browser Diagram
     y += card_h + 22
-    y = section_title("STEP 04", "숫자 [1] 입력으로 0ms 전용 브라우저 기동 (Zero-Setup)", "대시보드에서 숫자 1만 입력하면 0ms 인젝터가 자동 장착된 브라우저가 즉시 열립니다.", y)
+    y = section_title("STEP 04", "숫자 [1] 입력 후 우측 상단 [🟢 ON / ⚪ OFF] 상태창 확인", "숫자 1을 누르면 한국시리즈 연습장과 실제 티켓 창이 열리며, 우측 상단에서 ON/OFF 제어가 가능합니다.", y)
 
     # Left Mockup: Dark Terminal TUI Dashboard
     tui_x = MARGIN_X
     tui_y = y
-    tui_w = 236.0
+    tui_w = 224.0
     tui_h = 200.0
-    draw_window_frame(tui_x, tui_y, tui_w, tui_h, "🐚 BEOMCHRO v2.0 TUI Dashboard", dark=True)
+    draw_window_frame(tui_x, tui_y, tui_w, tui_h, "🐚 BEOMCHRO v2.1 Dashboard", dark=True)
 
-    text("██ BEOMCHRO INTERCEPTOR v2.0 ██", tui_x + 12, tui_y + 31, w=tui_w - 24, h=14, size=8.2, weight="Bold", color=(0, 240, 255), mono=True)
+    text("██ BEOMCHRO INTERCEPTOR v2.1 ██", tui_x + 10, tui_y + 31, w=tui_w - 20, h=14, size=8.0, weight="Bold", color=(0, 240, 255), mono=True)
     rect(tui_x + 10, tui_y + 47, tui_w - 20, 46, r=4, fill=(15, 23, 42), stroke=(59, 130, 246), stroke_w=0.8)
-    text("• 클릭 엔진 : ACTIVE (Native)\n• 시뮬레이터: ONLINE (:8989)\n• 시간 오차 : +0.12 ms (동기화됨)", tui_x + 16, tui_y + 51, w=tui_w - 32, h=40, size=7.3, weight="Medium", color=(167, 243, 208), line_spacing=1.5, mono=True)
+    text("• 클릭 엔진 : ACTIVE (Native)\n• 시뮬레이터: ONLINE (:8989)\n• 시간 오차 : +0.12 ms (동기화됨)", tui_x + 14, tui_y + 51, w=tui_w - 28, h=40, size=7.2, weight="Medium", color=(167, 243, 208), line_spacing=1.5, mono=True)
 
     # Operation Mode Box inside Terminal
     rect(tui_x + 10, tui_y + 99, tui_w - 20, 66, r=4, fill=(15, 23, 42), stroke=(234, 179, 8), stroke_w=0.9)
     rect(tui_x + 14, tui_y + 105, tui_w - 28, 17, r=3, fill=(6, 95, 70))
-    text("1. 🚀 원클릭 0ms 티켓팅 브라우저 실행", tui_x + 18, tui_y + 108, w=tui_w - 36, h=13, size=7.5, weight="ExtraBold", color=(110, 231, 183))
-    text("2. 🎯 화면 픽셀 색상 감시 모드\n3. ⏰ 서버 시간 정각 자동 클릭 모드\n4. ⚡ 마우스 초고속 격발 벤치마크", tui_x + 18, tui_y + 124, w=tui_w - 36, h=38, size=7.2, color=(203, 213, 225), line_spacing=1.4)
+    text("1. 🚀 원클릭 0ms 티켓팅 브라우저 실행", tui_x + 16, tui_y + 108, w=tui_w - 32, h=13, size=7.3, weight="ExtraBold", color=(110, 231, 183))
+    text("2. 🎯 화면 픽셀 색상 감시 모드\n3. ⏰ 서버 시간 정각 자동 클릭 모드\n4. ⚡ 마우스 초고속 격발 벤치마크", tui_x + 16, tui_y + 124, w=tui_w - 32, h=38, size=7.1, color=(203, 213, 225), line_spacing=1.4)
 
     # Prompt line at bottom of terminal
     rect(tui_x + 10, tui_y + 170, tui_w - 20, 22, r=4, fill=(30, 41, 59), stroke=(239, 68, 68), stroke_w=1.2)
-    text("선택할 번호 입력 [1]:  1 ⏎ (엔터!)", tui_x + 16, tui_y + 175, w=tui_w - 32, h=14, size=8.0, weight="ExtraBold", color=(253, 224, 71))
+    text("선택할 번호 입력 [1]:  1 ⏎ (엔터!)", tui_x + 14, tui_y + 175, w=tui_w - 28, h=14, size=7.8, weight="ExtraBold", color=(253, 224, 71))
 
     # Center Connector Arrow
-    mid_x1 = tui_x + tui_w + 6
-    mid_x2 = mid_x1 + 38
+    mid_x1 = tui_x + tui_w + 5
+    mid_x2 = mid_x1 + 34
     arrow_right(mid_x1, tui_y + 100, mid_x2, color=(2, 132, 199), width=2.5, head=6)
-    text("자동 장착", mid_x1 - 2, tui_y + 78, w=44, h=14, size=7.5, weight="ExtraBold", color=(2, 132, 199), align="center")
-    text("Zero-Setup", mid_x1 - 4, tui_y + 107, w=48, h=12, size=6.8, weight="Bold", color=(100, 116, 139), align="center")
+    text("자동 장착", mid_x1 - 2, tui_y + 78, w=40, h=14, size=7.2, weight="ExtraBold", color=(2, 132, 199), align="center")
 
-    # Right Mockup: Chrome Browser with 0ms HUD Banner Pre-Mounted!
-    br_x = mid_x2 + 6
+    # Right Mockup: Chrome Browser with Interactive v2.1 HUD Widget!
+    br_x = mid_x2 + 5
     br_w = MARGIN_X + CONTENT_W - br_x
     br_h = 200.0
     draw_window_frame(br_x, tui_y, br_w, br_h, "🌐 Chrome (전용 티켓팅 세션)", dark=True)
 
-    # Browser Tabs & Address bar
-    rect(br_x + 8, tui_y + 28, 102, 16, r=4, fill=(30, 41, 59))
-    text("⚡ BEOMCHRO 연습장", br_x + 12, tui_y + 31, w=94, h=12, size=7.0, weight="Bold", color=(0, 240, 255))
-    rect(br_x + 114, tui_y + 28, 95, 16, r=4, fill=(15, 23, 42))
-    text("🎫 NOL 티켓 예매", br_x + 118, tui_y + 31, w=88, h=12, size=7.0, color=(148, 163, 184))
+    # Browser Tabs
+    rect(br_x + 8, tui_y + 28, 120, 16, r=4, fill=(30, 41, 59))
+    text("⚾ 한국시리즈 7차전 연습장", br_x + 12, tui_y + 31, w=112, h=12, size=6.8, weight="Bold", color=(0, 240, 255))
+    rect(br_x + 132, tui_y + 28, 110, 16, r=4, fill=(15, 23, 42))
+    text("🎫 NOL 티켓 한국시리즈", br_x + 136, tui_y + 31, w=102, h=12, size=6.8, color=(148, 163, 184))
 
-    # Glowing Top-Right HUD Banner (The Star Feature!)
-    hud_x = br_x + br_w - 178
-    hud_y = tui_y + 52
-    rect(hud_x, hud_y, 168, 26, r=6, fill=(10, 14, 23), stroke=(0, 240, 255), stroke_w=1.8)
-    circle(hud_x + 12, hud_y + 13, 4.0, fill=(0, 240, 255))
-    text("⚡ BEOMCHRO EXTENSION 0ms READY", hud_x + 20, hud_y + 8, w=144, h=14, size=7.2, weight="ExtraBold", color=(240, 244, 252))
+    # Interactive v2.1 HUD Panel inside Browser Mockup
+    hud_x = br_x + 12
+    hud_y = tui_y + 50
+    hud_w = br_w - 24
+    rect(hud_x, hud_y, hud_w, 72, r=8, fill=(10, 14, 23), stroke=(0, 240, 255), stroke_w=1.6)
+    circle(hud_x + 12, hud_y + 14, 4.0, fill=(0, 240, 255))
+    text("⚡ BEOMCHRO v2.1", hud_x + 20, hud_y + 8, w=95, h=14, size=7.8, weight="ExtraBold", color=(255, 255, 255))
+    badge("🔍 작동확인", hud_x + hud_w - 134, hud_y + 7, 54, 15, bg=(30, 41, 59), fg=(226, 232, 240), size=6.8, r=4)
+    badge("🟢 ON (작동중)", hud_x + hud_w - 74, hud_y + 7, 66, 15, bg=(5, 150, 105), fg=(255, 255, 255), size=6.8, r=4)
 
-    # Callout box pointing to HUD banner
-    rect(br_x + 14, tui_y + 92, br_w - 28, 96, r=8, fill=(17, 24, 39), stroke=(16, 185, 129), stroke_w=1.2)
-    badge("✔ 확인 포인트", br_x + 24, tui_y + 102, 72, 16, bg=(16, 185, 129), fg=(255, 255, 255), size=7.6, r=4)
-    text("우측 상단 0ms 배너가 뜨면 준비 끝!", br_x + 102, tui_y + 103, w=130, h=16, size=8.6, weight="ExtraBold", color=(110, 231, 183))
-    text("• 웹스토어에서 Tampermonkey를 설치할 필요가 없습니다.\n• 스크립트 코드를 복사/붙여넣기할 필요가 없습니다.\n• 브라우저가 열리는 순간 0ms 감시 엔진이 자동 작동합니다.", br_x + 24, tui_y + 126, w=br_w - 44, h=56, size=7.7, weight="Medium", color=(226, 232, 240), line_spacing=2.2)
+    rect(hud_x + 8, hud_y + 26, hud_w - 16, 20, r=4, fill=(17, 24, 39), stroke=(51, 65, 85), stroke_w=0.8)
+    text("🎯 타겟 조준 완료: [남은시간 39:01] (파란 테두리 표시중)", hud_x + 14, hud_y + 31, w=hud_w - 28, h=12, size=7.1, weight="Bold", color=(110, 231, 183))
+    text("✋ 정각에 직접 누르거나 마우스 커서를 올려두지 마세요! (0ms 자동 클릭)", hud_x + 10, hud_y + 51, w=hud_w - 20, h=14, size=6.9, weight="ExtraBold", color=(253, 224, 71))
+
+    # Explanation box below HUD inside Browser Mockup
+    rect(br_x + 12, tui_y + 128, br_w - 24, 62, r=7, fill=(17, 24, 39), stroke=(16, 185, 129), stroke_w=1.1)
+    text("✔ [🟢 ON / ⚪ OFF] 스위치 & [🔍 작동확인] 사용법", br_x + 20, tui_y + 134, w=br_w - 40, h=14, size=8.0, weight="ExtraBold", color=(110, 231, 183))
+    text("• 우측 상단 [🟢 ON (작동중)] 버튼을 누르면 언제든 감시를 켜고 끌 수 있습니다.\n• [🔍 작동확인]을 누르면 현재 페이지의 예매 버튼을 찾아 파란 레이저로 비춰줍니다.\n• 정각에는 마우스에서 손을 떼고 화면만 켜두시면 0ms로 자동 클릭됩니다!", br_x + 20, tui_y + 149, w=br_w - 36, h=38, size=7.1, weight="Medium", color=(226, 232, 240), line_spacing=1.5)
 
 
 # ==============================================================================
 # PAGE 4: STEP 05 (Session Persistence Diagram) & STEP 06 (Simulator Visual Guide)
 # ==============================================================================
 def render_page_4():
-    draw_page_chrome(4, 5, "STEP 05 로그인 영구 보존 & STEP 06 모의 연습장 체험")
+    draw_page_chrome(4, 5, "STEP 05 로그인 영구 보존 & STEP 06 한국시리즈 실전 연습장")
 
     y = 46
     y = section_title("STEP 05", "사전 로그인 & 본인인증(PASS) 영구 보존 원리", "티켓팅 당일 로그인을 다시 하느라 시간을 허비하지 않도록 전용 프로필이 세션을 안전하게 보관합니다.", y)
@@ -596,77 +607,77 @@ def render_page_4():
     badge("3. 티켓팅 당일 즉시 투입", b3_x + 12, b_y + 10, 124, 16, bg=(5, 150, 105), fg=(255, 255, 255), size=7.6, r=4)
     text("브라우저를 닫았다가 당일에 다시\n켜도 로그인이 그대로 유지되어\n즉시 예매 대기 가능!", b3_x + 10, b_y + 32, w=b_w - 20, h=42, size=7.8, weight="SemiBold", color=(6, 95, 70), align="center", line_spacing=1.8)
 
-    # STEP 06: Simulator Practice Visual Mockup
+    # STEP 06: Simulator Practice Visual Mockup (2026 Korean Series Game 7 Gate Replica)
     y += 126
-    y = section_title("STEP 06", "내장 모의 연습장(Simulator)으로 0ms 1번 대기열 체험하기", "실제 티켓팅 전에 함께 열린 로컬 연습장(http://localhost:8989)에서 0ms 자동 격발을 직접 눈으로 확인하세요.", y)
+    y = section_title("STEP 06", "내장 실전 연습장(2026 한국시리즈 7차전 게이트)으로 작동 검증하기", "실제 인터파크/NOL 티켓과 100% 동일한 HTML 구조의 내장 연습장(http://localhost:8989)에서 직접 테스트하세요.", y)
 
-    # Full-width Visual Mockup of Simulator UI + 1st Place Result Modal
+    # Full-width Visual Mockup of 2026 Korean Series Game 7 Gate Simulator UI + 1st Place Result Modal
     sim_x = MARGIN_X
     sim_y = y
     sim_w = CONTENT_W
     sim_h = 285.0
-    draw_window_frame(sim_x, sim_y, sim_w, sim_h, "⚡ BEOMCHRO SIMULATOR (http://localhost:8989) — 놀티켓 1:1 모의 연습장", dark=True)
+    draw_window_frame(sim_x, sim_y, sim_w, sim_h, "⚡ BEOMCHRO 내장 연습장 (http://localhost:8989) — 2026 한국시리즈 7차전 KT vs 삼성", dark=True)
 
     # Top Control Toolbar inside Simulator
     rect(sim_x + 14, sim_y + 32, sim_w - 28, 44, r=7, fill=(30, 41, 59), stroke=(51, 65, 85), stroke_w=1.0)
-    text("트리거 제어 패널:", sim_x + 24, sim_y + 48, w=90, h=14, size=8.5, weight="ExtraBold", color=(0, 240, 255))
+    badge("화면 1: 7차전 게이트", sim_x + 22, sim_y + 42, 86, 24, bg=(65, 84, 255), fg=(255, 255, 255), size=7.4, weight="ExtraBold", r=5)
 
     # [5초 카운트다운] button with callout ①
-    rect(sim_x + 114, sim_y + 41, 104, 26, r=5, fill=(37, 99, 235), stroke=(96, 165, 250), stroke_w=1.2)
-    text("⏱️ 5초 카운트다운", sim_x + 114, sim_y + 48, w=104, h=14, size=8.2, weight="ExtraBold", color=(255, 255, 255), align="center")
-    circle(sim_x + 114, sim_y + 41, 8.5, fill=(239, 68, 68))
-    text("1", sim_x + 106, sim_y + 35, w=16, h=12, size=8.0, weight="Heavy", color=(255, 255, 255), align="center")
+    rect(sim_x + 116, sim_y + 41, 102, 26, r=5, fill=(37, 99, 235), stroke=(96, 165, 250), stroke_w=1.2)
+    text("⏱️ 5초 카운트다운", sim_x + 116, sim_y + 48, w=102, h=14, size=8.0, weight="ExtraBold", color=(255, 255, 255), align="center")
+    circle(sim_x + 116, sim_y + 41, 8.5, fill=(239, 68, 68))
+    text("1", sim_x + 108, sim_y + 35, w=16, h=12, size=8.0, weight="Heavy", color=(255, 255, 255), align="center")
 
     # [즉시 오픈] button
-    rect(sim_x + 226, sim_y + 41, 128, 26, r=5, fill=(234, 88, 12))
-    text("⚡ 즉시 오픈 (0ms 테스트)", sim_x + 226, sim_y + 48, w=128, h=14, size=8.2, weight="ExtraBold", color=(255, 255, 255), align="center")
+    rect(sim_x + 224, sim_y + 41, 122, 26, r=5, fill=(234, 88, 12))
+    text("⚡ 즉시 오픈 (0ms 테스트)", sim_x + 224, sim_y + 48, w=122, h=14, size=8.0, weight="ExtraBold", color=(255, 255, 255), align="center")
 
     # Status indicator on right of toolbar
-    badge("● ⚡ BEOMCHRO SCRIPT ACTIVE (0ms)", sim_x + 364, sim_y + 44, 146, 20, bg=(6, 78, 59), fg=(110, 231, 183), size=7.2, weight="ExtraBold", r=10)
+    badge("🟢 ON (작동중) • 타겟 조준됨", sim_x + 354, sim_y + 44, 156, 20, bg=(6, 78, 59), fg=(110, 231, 183), size=7.4, weight="ExtraBold", r=10)
 
-    # Left: Concert Info & Active Booking Button
-    rect(sim_x + 14, sim_y + 84, 225, 186, r=8, fill=(22, 28, 45), stroke=(51, 65, 85), stroke_w=1.0)
-    grad_rect(sim_x + 24, sim_y + 94, 205, 68, 6, (49, 46, 129), (88, 28, 135), angle=20)
-    text("NOL TICKET ORIGINAL", sim_x + 24, sim_y + 104, w=205, h=12, size=7.0, weight="ExtraBold", color=(0, 240, 255), align="center")
-    text("2026 WORLD TOUR FINALE", sim_x + 24, sim_y + 118, w=205, h=16, size=10.5, weight="Heavy", color=(255, 255, 255), align="center")
-    text("잠실종합운동장 올림픽주경기장", sim_x + 24, sim_y + 138, w=205, h=12, size=7.5, color=(203, 213, 225), align="center")
+    # Left: Real Interpark Gate Card (White Gate Layout Replica)
+    rect(sim_x + 14, sim_y + 84, 228, 186, r=8, fill=(255, 255, 255), stroke=(203, 213, 225), stroke_w=1.2)
+    text("2026 KBO 포스트시즌", sim_x + 26, sim_y + 94, w=200, h=12, size=7.5, weight="Bold", color=(100, 116, 139))
+    text("2026 한국시리즈 7차전 KT vs 삼성", sim_x + 26, sim_y + 108, w=204, h=18, size=10.2, weight="Heavy", color=(15, 23, 42))
+    line(sim_x + 26, sim_y + 130, sim_x + 230, sim_y + 130, color=(226, 232, 240), width=1.0)
+    text("• 관람일시 : 2026.11.01 (일) 14:00\n• 관람장소 : 수원 KT위즈파크\n• 버튼상태 : 남은시간 00:05 ➔ 예매하기!", sim_x + 26, sim_y + 138, w=204, h=44, size=7.6, weight="SemiBold", color=(51, 65, 85), line_spacing=1.8)
 
-    text("• 좌석 등급: VIP석 500석 / R석 1,800석\n• 상태: 00.000초 정각 버튼 활성화됨!", sim_x + 24, sim_y + 170, w=205, h=28, size=7.6, color=(148, 163, 184), line_spacing=1.8)
+    # Glowing [남은시간 00:00 -> 예매하기] Button with Neon Target Outline!
+    grad_rect(sim_x + 24, sim_y + 196, 208, 46, 8, (65, 84, 255), (37, 99, 235), angle=0, stroke=(0, 240, 255), stroke_w=2.2)
+    text("예매하기 (0ms 자동 격발!)", sim_x + 24, sim_y + 205, w=208, h=16, size=10.2, weight="Heavy", color=(255, 255, 255), align="center")
+    text("파란 테두리 조준 ➔ 손 떼고 있으면 자동 클릭!", sim_x + 24, sim_y + 223, w=208, h=12, size=7.1, weight="Bold", color=(224, 242, 254), align="center")
+    circle(sim_x + 24, sim_y + 196, 8.5, fill=(239, 68, 68))
+    text("2", sim_x + 16, sim_y + 190, w=16, h=12, size=8.0, weight="Heavy", color=(255, 255, 255), align="center")
 
-    # Glowing [예매하기] Button (Auto-Clicked in 0ms!)
-    grad_rect(sim_x + 24, sim_y + 206, 205, 50, 8, (29, 78, 216), (2, 132, 199), angle=0, stroke=(0, 240, 255), stroke_w=1.8)
-    text("예매하기 (0ms 자동 격발!)", sim_x + 24, sim_y + 216, w=205, h=16, size=10.5, weight="Heavy", color=(255, 255, 255), align="center")
-    text("손을 대지 않아도 정각에 자동 클릭됩니다", sim_x + 24, sim_y + 234, w=205, h=12, size=7.4, weight="Bold", color=(224, 242, 254), align="center")
-    circle(sim_x + 24, sim_y + 206, 8.5, fill=(239, 68, 68))
-    text("2", sim_x + 16, sim_y + 200, w=16, h=12, size=8.0, weight="Heavy", color=(255, 255, 255), align="center")
+    text("✋ 마우스를 올리거나 직접 누르지 마세요!", sim_x + 24, sim_y + 248, w=208, h=14, size=7.4, weight="ExtraBold", color=(220, 38, 38), align="center")
 
     # Right: Queue 1st Place Intercept Modal Box
-    mod_x = sim_x + 252
+    mod_x = sim_x + 254
     mod_y = sim_y + 84
-    mod_w = sim_w - 266
+    mod_w = sim_w - 268
     mod_h = 186.0
     rect(mod_x, mod_y, mod_w, mod_h, r=10, fill=(18, 22, 34), stroke=(0, 240, 255), stroke_w=1.8)
     rect(mod_x, mod_y, mod_w, 24, r=10, fill=(10, 14, 23))
     rect(mod_x, mod_y + 14, mod_w, 10, r=0, fill=(10, 14, 23))
-    text("🎉 NOL TICKET QUEUE INTERCEPT RESULT", mod_x + 12, mod_y + 6, w=mod_w - 24, h=14, size=7.8, weight="ExtraBold", color=(0, 240, 255))
+    text("🎉 0ms 인터셉트 성공! (대기열 1번 진입)", mod_x + 12, mod_y + 6, w=mod_w - 24, h=14, size=7.8, weight="ExtraBold", color=(0, 240, 255))
 
     circle(mod_x + mod_w - 14, mod_y + 12, 8.5, fill=(239, 68, 68))
     text("3", mod_x + mod_w - 22, mod_y + 6, w=16, h=12, size=8.0, weight="Heavy", color=(255, 255, 255), align="center")
 
     # Queue Rank #1 Box
     grad_rect(mod_x + 16, mod_y + 34, mod_w - 32, 74, 8, (15, 23, 42), (30, 58, 138), angle=10, stroke=(0, 240, 255), stroke_w=1.0)
-    text("나의 대기 번호", mod_x + 16, mod_y + 41, w=mod_w - 32, h=12, size=8.0, weight="Bold", color=(148, 163, 184), align="center")
+    text("나의 대기 순번", mod_x + 16, mod_y + 41, w=mod_w - 32, h=12, size=8.0, weight="Bold", color=(148, 163, 184), align="center")
     text("대기 1번", mod_x + 16, mod_y + 55, w=mod_w - 32, h=26, size=22.0, weight="Heavy", color=(0, 240, 255), align="center")
-    text("예상 대기 시간: 즉시 입장 (0분 00초)", mod_x + 16, mod_y + 86, w=mod_w - 32, h=14, size=8.2, weight="Bold", color=(167, 243, 208), align="center")
+    text("예상 대기 시간: 0분 00초 (좌석 선택창 즉시 진입)", mod_x + 16, mod_y + 86, w=mod_w - 32, h=14, size=8.0, weight="Bold", color=(167, 243, 208), align="center")
 
     # Stats rows inside modal
-    text("• 반응 속도 (Latency) :  0.14 ms (극초음속 인터셉트)\n• 격발 방식 (Trigger) :  BEOMCHRO 0ms 자동 인젝션\n• 진입 판정 등급      :  ★ 신(GOD)의 영역 (VIP 1열 확정)", mod_x + 20, mod_y + 118, w=mod_w - 40, h=58, size=8.0, weight="Bold", color=(226, 232, 240), line_spacing=2.5)
+    text("• 반응 속도 (Latency) :  0.14 ms (0ms 자동 클릭)\n• 격발 방식 (Trigger) :  BEOMCHRO 0ms 자동 격발 성공!\n• 검증 결과 (Status)  :  ★ 실전 작동 100% 정상 확인됨!", mod_x + 20, mod_y + 118, w=mod_w - 40, h=58, size=8.0, weight="Bold", color=(226, 232, 240), line_spacing=2.5)
 
     # Bottom 3-step practice summary strip
     py = sim_y + sim_h + 12
     rect(MARGIN_X, py, CONTENT_W, 74, r=8, fill=(240, 249, 255), stroke=(14, 165, 233), stroke_w=1.0)
-    text("🎮 모의 연습장 10초 테스트 방법 (① ➔ ② ➔ ③)", MARGIN_X + 14, py + 8, w=400, h=16, size=9.6, weight="ExtraBold", color=(3, 105, 161))
-    text("① 상단의 [5초 카운트다운] 버튼을 클릭한 뒤 마우스에서 손을 완전히 뗍니다.\n② 카운트다운이 0.00초가 되어 [예매하기] 버튼이 파란색으로 바뀌는 순간, 프로그램이 0ms로 자동 클릭합니다.\n③ 화면에 [나의 대기 번호: 1번 (즉시 입장)] 결과 창이 뜨면 모든 세팅이 완벽하게 작동 중인 것입니다!", MARGIN_X + 14, py + 26, w=CONTENT_W - 28, h=44, size=8.1, weight="SemiBold", color=(15, 23, 42), line_spacing=2.0)
+    text("🎮 한국시리즈 7차전 내장 연습장 5초 검증법 (① ➔ ② ➔ ③)", MARGIN_X + 14, py + 8, w=400, h=16, size=9.6, weight="ExtraBold", color=(3, 105, 161))
+    text("① 상단 [⏱️ 5초 카운트다운] 버튼을 클릭한 뒤 마우스에서 아예 손을 떼고 기다립니다.\n② [남은시간 00:05] 버튼이 00:00이 되어 [예매하기]로 열리는 찰나, 프로그램이 0ms로 자동 클릭합니다.\n③ 화면에 [나의 대기 순번: 1번] 창이 뜨면 내 컴퓨터에서 100% 완벽하게 작동 중인 것입니다!", MARGIN_X + 14, py + 26, w=CONTENT_W - 28, h=44, size=8.1, weight="SemiBold", color=(15, 23, 42), line_spacing=2.0)
 
 
 # ==============================================================================
@@ -680,9 +691,9 @@ def render_page_5():
 
     timeline = [
         ("OPEN 15분 전", "프로그램 실행 & 숫자 [1] 입력", "BEOMCHRO.app(Mac) 또는 run_windows.bat(Win)을 더블클릭해 실행한 뒤,\n키보드 숫자 [1]을 눌러 0ms 전용 브라우저를 엽니다.", (2, 132, 199), "준비 시작"),
-        ("OPEN 10분 전", "사이트 접속 & 로그인/본인인증 확인", "전용 브라우저에서 놀티켓(또는 인터파크)에 접속하여 로그인이 유지되어 있는지\n확인하고, 팝업 차단 해제 및 본인인증 여부를 점검합니다.", (14, 165, 233), "세션 점검"),
-        ("OPEN 3분 전", "공연 페이지 대기 & 우측 상단 배너 확인", "예매할 공연 상세 페이지에 들어가 날짜/회차를 미리 선택해 두고,\n우측 상단에 [⚡ BEOMCHRO EXTENSION 0ms READY] 배너가 떠 있는지 확인합니다.", (16, 185, 129), "조준 완료"),
-        ("정각 00.000초", "버튼 활성화 즉시 0ms 자동 격발 ➔ 1번 진입!", "정각에 '예매 오픈 대기 중' 버튼이 '예매하기'로 활성화되는 찰나,\nBEOMCHRO가 0.1ms 만에 자동으로 가로채기 클릭하여 대기열 1번으로 진입합니다!", (239, 68, 68), "🔥 0ms 격발!"),
+        ("OPEN 10분 전", "사이트 접속 & 로그인/본인인증 확인", "전용 브라우저에서 놀티켓/인터파크에 접속하여 로그인이 유지되어 있는지\n확인하고, 팝업 차단 해제 및 본인인증 여부를 점검합니다.", (14, 165, 233), "세션 점검"),
+        ("OPEN 3분 전", "게이트 페이지 대기 & [🟢 ON] 확인", "예매할 경기/공연 게이트 페이지([남은시간 XX:XX])를 띄워 두고,\n우측 상단 위젯이 [🟢 ON (작동중)]인지, 버튼에 파란 테두리가 있는지 확인합니다.", (16, 185, 129), "조준 완료"),
+        ("정각 00.000초", "손 떼고 대기 ➔ 0ms 자동 클릭 & 1번 진입!", "직접 누르거나 마우스 커서를 올려두지 마세요! 가만히 화면만 켜두시면\n[남은시간 00:00]이 풀리는 즉시 0ms로 자동 클릭하여 대기열 1번으로 진입합니다!", (239, 68, 68), "🔥 손 떼고 대기!"),
     ]
 
     for i, (t_time, t_title, t_desc, t_col, t_tag) in enumerate(timeline):
@@ -707,11 +718,11 @@ def render_page_5():
     y = section_title("APPENDIX", "대시보드 5가지 동작 모드 요약표", "기본적으로 [1번 모드]만 사용하시면 되며, 필요에 따라 고급 보조 모드를 함께 사용할 수 있습니다.", y)
 
     modes = [
-        ("1번 (기본 권장)", "원클릭 0ms 티켓팅 브라우저", "0ms 확장프로그램 자동 장착 브라우저 기동 + 연습장 실행", "★★★★★ (필수)"),
+        ("1번 (기본 권장)", "원클릭 0ms 티켓팅 브라우저", "0ms 엔진 자동 장착 브라우저 기동 + 한국시리즈 7차전 연습장", "★★★★★ (필수)"),
         ("2번 (보조 모드)", "화면 픽셀 색상 감시 모드", "지정한 마우스 좌표의 버튼 색상이 바뀌는 순간 하드웨어 클릭", "★★★★☆"),
         ("3번 (보조 모드)", "서버 시간 정각 자동 클릭", "서버 시간 오차(Time Skew)를 보정해 목표 시각 정각 자동 클릭", "★★★★☆"),
         ("4번 (테스트용)", "마우스 초고속 격발 벤치마크", "내 컴퓨터의 OS 네이티브 마우스 클릭 반응속도(0.1ms) 측정", "★★★☆☆"),
-        ("5번 (점검용)", "시스템 종합 진단 (Doctor)", "파이썬, 마우스 엔진, 확장프로그램, 연습장 파일 상태 일괄 진단", "★★★☆☆"),
+        ("5번 (점검용)", "시스템 종합 진단 (Doctor)", "브라우저, 마우스 엔진, 확장프로그램, 연습장 파일 상태 일괄 진단", "★★★☆☆"),
     ]
 
     th_y = y
@@ -736,12 +747,12 @@ def render_page_5():
     fy += 20
 
     faqs = [
-        ("Q1. 브라우저 우측 상단에 [⚡ BEOMCHRO EXTENSION 0ms READY] 배너가 안 보여요!",
-         "A. 기존에 열려 있던 일반 크롬 창이 있으면 모두 완전히 닫으신 후, BEOMCHRO 대시보드에서 [1]번을 다시 입력해 실행해 주세요."),
-        ("Q2. 다른 컴퓨터나 지인에게 프로그램을 공유해도 되나요?",
-         "A. 네! GitHub 주소(https://github.com/Keyco55/beomchro)와 이 PDF 설명서 파일을 함께 보내주시면 누구나 똑같이 설치 및 사용이 가능합니다."),
-        ("Q3. 내 컴퓨터 시계가 티켓팅 서버 시계보다 느리거나 빠르면 어쩌죠?",
-         "A. 실행 시 서버 시간을 밀리초(ms) 단위로 자동 동기화하며, 0ms 모드는 버튼 활성화 순간을 직접 감지하므로 시계 오차 영향을 받지 않습니다."),
+        ("Q1. 숫자 1을 눌렀는데 파란불만 들어오고 작동 중인지 모르겠어요! ON/OFF가 있나요?",
+         "A. 브라우저 우측 상단 위젯에 [🟢 ON (작동중) / ⚪ OFF] 버튼과 [🔍 작동확인] 버튼이 있습니다! 예매 버튼에 파란 테두리가 있으면 정상 조준된 상태입니다."),
+        ("Q2. 정각(00:00)에 제가 직접 누르는 건가요, 아니면 마우스 커서만 갖다 두는 건가요?",
+         "A. 둘 다 아닙니다! 마우스에서 아예 손을 떼고 가만히 계세요. [🟢 ON] 상태면 정각에 버튼이 열리는 순간 프로그램이 0ms로 자동 클릭합니다."),
+        ("Q3. 윈도우 컴퓨터에 파이썬(Python)이 안 깔려 있는데 작동하나요?",
+         "A. 네! run_windows.bat을 실행하면 윈도우 기본 내장 엔진이 자동으로 작동하므로 파이썬을 전혀 설치할 필요가 없습니다."),
     ]
 
     for idx, (q_str, a_str) in enumerate(faqs):

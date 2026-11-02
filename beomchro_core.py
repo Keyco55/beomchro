@@ -257,10 +257,24 @@ class SimulatorHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            status_json = '{"status": "online", "engine": "BEOMCHRO v2.0", "target": "simulator"}'
+            status_json = '{"status": "online", "engine": "BEOMCHRO v2.1", "target": "simulator"}'
             self.wfile.write(status_json.encode("utf-8"))
             return
+        if self.path == "/extension/content.js":
+            ext_js = Path(__file__).resolve().parent / "extension" / "content.js"
+            if ext_js.exists():
+                self.send_response(200)
+                self.send_header("Content-Type", "application/javascript; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(ext_js.read_bytes())
+                return
         super().do_GET()
+
+    def guess_type(self, path):
+        ctype = super().guess_type(path)
+        if ctype in ("text/html", "text/css", "application/javascript", "text/javascript"):
+            return f"{ctype}; charset=utf-8"
+        return ctype
 
     def log_message(self, format, *args):
         pass
@@ -393,10 +407,11 @@ class BeomchroTUI:
             launched = False
             if launch_browser:
                 try:
-                    proc = launch_browser(target_urls=[sim_url, "https://ticket.nol.com"])
+                    proc = launch_browser(target_urls=[sim_url, "https://nol.yanolja.com/ticket/genre/sports/postseason"])
                     if proc:
-                        console.print(f"[bold green]✔ 브라우저 자동 실행 완료! (Tampermonkey 설치 전혀 불필요)[/bold green]")
-                        console.print("[dim]브라우저 우측 상단에 ⚡ BEOMCHRO 0ms READY 배너가 표시됩니다.[/dim]")
+                        console.print("[bold green]✔ 브라우저 자동 실행 완료! (2026 한국시리즈 7차전 자체 테스트 & NOL 티켓 오픈)[/bold green]")
+                        console.print("[bold cyan]  • 우측 상단 패널에서 [🟢 ON / ⚪ OFF] 스위치와 [🔍 작동확인] 버튼을 사용할 수 있습니다.[/bold cyan]")
+                        console.print("[bold yellow]  • 정각에 직접 누르거나 마우스 커서를 올려두지 마세요! 버튼이 열리면 0ms로 자동 클릭됩니다.[/bold yellow]")
                         launched = True
                 except Exception as e:
                     console.print(f"[yellow]⚠️ 전용 브라우저 런처 경고: {e}[/yellow]")
@@ -564,6 +579,16 @@ def main():
             res = requests.get(f"http://127.0.0.1:{args.port}/api/status", timeout=2)
             assert res.status_code == 200, f"HTTP status: {res.status_code}"
             print(f"[TEST] API /api/status OK: {res.text}")
+
+            res_idx = requests.get(f"http://127.0.0.1:{args.port}/index.html", timeout=2)
+            assert res_idx.status_code == 200 and "2026 한국시리즈 7차전 KT vs 삼성" in res_idx.text
+            assert "_button_4ncv0_1" in res_idx.text and "_disabled_2p3w6_34" in res_idx.text
+            print("[TEST] Simulator /index.html (2026 한국시리즈 7차전 KT vs 삼성 Gate & List) OK")
+
+            res_ext = requests.get(f"http://127.0.0.1:{args.port}/extension/content.js", timeout=2)
+            assert res_ext.status_code == 200 and "beomchro-toggle-btn" in res_ext.text
+            assert '.buttons button[class*="_button_"]' in res_ext.text
+            print("[TEST] Extension /extension/content.js (ON/OFF Switch & Real Gate Selectors) OK")
 
         dur = app.mouse.click(100, 100)
         print(f"[TEST] Native Mouse Click dispatch OK ({dur:.3f} ms, Backend: {app.mouse.backend})")
