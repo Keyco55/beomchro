@@ -1,35 +1,38 @@
 @echo off
-REM ==============================================================================
-REM BEOMCHRO (범크로) v2.1 Windows One-Click Launcher (Zero-Python Supported!)
-REM NOL-TICKET ULTRA FAST QUEUE INTERCEPTOR
-REM ==============================================================================
-
-chcp 65001 > nul
+setlocal EnableDelayedExpansion
 title BEOMCHRO v2.1 - NOL Ticket 0ms Queue Interceptor
 cd /d "%~dp0"
 
-REM 파이썬이 설치되어 있지 않아도 Windows 내장 엔진(beomchro_win_native.ps1)으로 100% 즉시 작동합니다!
-python --version >nul 2>&1
+echo ==========================================================================
+echo   [BEOMCHRO v2.1] Windows Native Engine Starting...
+echo   Working Directory: %~dp0
+echo ==========================================================================
+
+if not exist "%~dp0beomchro_win_native.ps1" (
+    echo.
+    echo [ERROR] Required files not found in current folder!
+    echo Did you double-click inside the .zip file without extracting it?
+    echo Please right-click the .zip file and click [Extract All] first!
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('[ZIP Extract Required]`n`nPlease extract (Unzip) the downloaded .zip file to a normal folder first, then double-click run_windows.bat!', 'BEOMCHRO v2.1', 'OK', 'Warning')"
+    pause
+    exit /b 1
+)
+
+if not exist "%~dp0extension\manifest.json" (
+    echo.
+    echo [ERROR] extension\manifest.json not found! Please extract the full .zip file first.
+    pause
+    exit /b 1
+)
+
+chcp 65001 >nul 2>&1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0beomchro_win_native.ps1"
+
 if %ERRORLEVEL% NEQ 0 (
-    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0beomchro_win_native.ps1"
-    exit /b 0
+    echo.
+    echo [WARN] Standard launch returned code %ERRORLEVEL%. Retrying via memory stream...
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Invoke-Expression ([System.IO.File]::ReadAllText('%~dp0beomchro_win_native.ps1', [System.Text.Encoding]::UTF8))"
 )
 
-if not exist ".venv" (
-    echo [INFO] 최초 1회 실행 환경을 구성 중입니다...
-    python -m venv .venv >nul 2>&1
-    if %ERRORLEVEL% NEQ 0 (
-        powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0beomchro_win_native.ps1"
-        exit /b 0
-    )
-)
-
-call .venv\Scripts\activate.bat >nul 2>&1
-if exist "requirements.txt" (
-    pip install -r requirements.txt --quiet >nul 2>&1
-)
-
-python beomchro_core.py %*
-if %ERRORLEVEL% NEQ 0 (
-    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0beomchro_win_native.ps1"
-)
+echo.
+pause

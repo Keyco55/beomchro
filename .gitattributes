@@ -1,0 +1,4 @@
+# Ensure Windows batch and PowerShell scripts retain exact UTF-8 BOM and CRLF bytes in Git and GitHub ZIP downloads
+*.bat binary
+*.cmd binary
+*.ps1 binary
