@@ -280,8 +280,13 @@ class SimulatorHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         pass
 
 
+class ThreadingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    allow_reuse_address = True
+    daemon_threads = True
+
+
 class SimulatorServer:
-    """Threaded HTTP server for local simulator."""
+    """Multi-threaded HTTP server for local simulator (immune to preconnect socket hangs)."""
 
     def __init__(self, port=8989):
         self.port = port
@@ -289,21 +294,41 @@ class SimulatorServer:
         self.thread = None
         self.is_running = False
 
+    def _free_stale_port(self, port):
+        if IS_MACOS or IS_LINUX:
+            try:
+                res = subprocess.run(["lsof", "-ti", f":{port}"], capture_output=True, text=True, timeout=1.5)
+                if res.returncode == 0 and res.stdout.strip():
+                    my_pid = str(os.getpid())
+                    for pid in res.stdout.strip().splitlines():
+                        pid = pid.strip()
+                        if pid and pid != my_pid:
+                            subprocess.run(["kill", "-9", pid], capture_output=True, timeout=1.0)
+                    time.sleep(0.15)
+            except Exception:
+                pass
+
     def start(self):
         if self.is_running:
             return
 
-        socketserver.TCPServer.allow_reuse_address = True
-        try:
-            self.server = socketserver.TCPServer(("", self.port), SimulatorHTTPRequestHandler)
-            self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
-            self.thread.start()
-            self.is_running = True
-        except Exception as e:
-            if console:
-                console.print(f"[bold red]❌ Failed to start Simulator Server on port {self.port}: {e}[/bold red]")
-            else:
-                print(f"Failed to start server: {e}")
+        self._free_stale_port(self.port)
+
+        for candidate_port in range(self.port, self.port + 15):
+            try:
+                self.server = ThreadingTCPServer(("127.0.0.1", candidate_port), SimulatorHTTPRequestHandler)
+                self.port = candidate_port
+                self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+                self.thread.start()
+                self.is_running = True
+                return
+            except Exception:
+                continue
+
+        if console:
+            console.print(f"[bold red]❌ Failed to start Simulator Server on port {self.port}[/bold red]")
+        else:
+            print(f"Failed to start server on port {self.port}")
 
     def stop(self):
         if self.server:
@@ -318,12 +343,15 @@ class SimulatorServer:
 class BeomchroTUI:
     """Rich interactive TUI console dashboard."""
 
-    def __init__(self, port=8989, target_url="http://localhost:8989"):
+    def __init__(self, port=8989, target_url="http://127.0.0.1:8989"):
         self.port = port
         self.target_url = target_url
         self.mouse = FastMouseInjector()
-        self.time_sync = TimeSyncService(target_url=target_url)
         self.server = SimulatorServer(port=port)
+        self.server.start()
+        self.port = self.server.port
+        self.target_url = f"http://127.0.0.1:{self.port}"
+        self.time_sync = TimeSyncService(target_url=self.target_url)
 
     def render_header(self):
         return Panel(
@@ -396,14 +424,15 @@ class BeomchroTUI:
     def run_mode_simulator(self, auto_open=True):
         console.print("\n[bold cyan]🚀 로컬 연습 시뮬레이터 서버 시작 중...[/bold cyan]")
         self.server.start()
-        time.sleep(0.4)
+        self.port = self.server.port
+        time.sleep(0.2)
         self.time_sync.sync()
 
-        sim_url = f"http://localhost:{self.port}"
+        sim_url = f"http://127.0.0.1:{self.port}"
         console.print(f"[bold green]✔ 로컬 시뮬레이터가 성공적으로 실행되었습니다: {sim_url}[/bold green]")
         
         if auto_open:
-            console.print("[bold yellow]⚡ 0ms 인젝터 확장 프로그램이 자동 장착된 전용 브라우저를 띄웁니다...[/bold yellow]")
+            console.print("[bold yellow]⚡ 0ms 인젝터 엔진이 자동 장착된 전용 브라우저를 띄웁니다...[/bold yellow]")
             launched = False
             if launch_browser:
                 try:

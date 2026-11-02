@@ -30,7 +30,8 @@
   let hasTriggered = false;
   let observer = null;
   let hudEl = null;
-  let currentLockedEl = null;
+  let lastStatusHtml = '';
+  let lastGuideHtml = '';
 
   // Primary Gate & Booking Button Selectors (Matches real Interpark/NOL Gate DOM & Simulator)
   const GATE_BUTTON_SELECTORS = [
@@ -54,6 +55,20 @@
     } catch (e) {}
   }
   syncMainWorldFlag();
+
+  function setStatusHtml(statusEl, html) {
+    if (statusEl && lastStatusHtml !== html) {
+      lastStatusHtml = html;
+      statusEl.innerHTML = html;
+    }
+  }
+
+  function setGuideHtml(guideEl, html) {
+    if (guideEl && lastGuideHtml !== html) {
+      lastGuideHtml = html;
+      guideEl.innerHTML = html;
+    }
+  }
 
   // Find target gate button on page (even while disabled before open)
   function findTargetButton() {
@@ -79,26 +94,21 @@
     return true;
   }
 
-  // Highlight the locked button on the page so user has 100% visual certainty
+  // Highlight the locked button on the page so user has 100% visual certainty (DOM-write guarded)
   function updateTargetHighlight() {
     const target = findTargetButton();
-    currentLockedEl = target;
-
     const statusEl = document.getElementById('beomchro-target-status');
     const guideEl = document.getElementById('beomchro-action-guide');
 
     if (!target) {
-      // Check if we are on the NOL Ticket game list page
       const listBtns = document.querySelectorAll('.joint-rectangle-button--variant_outlined_primary, .game-cta-btn');
-      if (statusEl) {
-        if (listBtns.length > 0) {
-          statusEl.innerHTML = `<span style="color:#38bdf8;">📋 경기 목록 화면 감지됨 (${listBtns.length}개 경기)</span>`;
-          if (guideEl) {
-            guideEl.textContent = '💡 원하는 경기의 [예매하기]를 눌러 오픈 대기(게이트) 화면으로 들어가세요.';
-          }
-        } else {
-          statusEl.innerHTML = `<span style="color:#94a3b8;">🔍 예매 게이트 버튼 탐색 중...</span>`;
+      if (listBtns.length > 0) {
+        setStatusHtml(statusEl, `<span style="color:#38bdf8;">📋 경기 목록 화면 감지됨 (${listBtns.length}개 경기)</span>`);
+        if (isEnabled && !hasTriggered) {
+          setGuideHtml(guideEl, '💡 원하는 경기의 <strong>[예매하기]</strong>를 눌러 오픈 대기(게이트) 화면으로 이동하세요.');
         }
+      } else {
+        setStatusHtml(statusEl, `<span style="color:#94a3b8;">🔍 예매 게이트 버튼 탐색 중...</span>`);
       }
       return;
     }
@@ -106,24 +116,29 @@
     const btnText = (target.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 28) || '예매 버튼';
     const ready = isButtonReadyToClick(target);
 
-    // Apply visual target lock ring on the target button
-    if (isEnabled && !hasTriggered) {
-      target.style.outline = '3px solid #00f0ff';
-      target.style.outlineOffset = '3px';
-      target.setAttribute('data-beomchro-locked', 'true');
-    } else if (!isEnabled) {
-      target.style.outline = '2px dashed #64748b';
-      target.style.outlineOffset = '3px';
-      target.setAttribute('data-beomchro-locked', 'paused');
+    // Apply visual target lock ring on the target button only when state changes
+    const lockState = !isEnabled ? 'paused' : (hasTriggered ? 'triggered' : 'locked');
+    if (target.getAttribute('data-beomchro-locked') !== lockState) {
+      target.setAttribute('data-beomchro-locked', lockState);
+      if (lockState === 'locked') {
+        target.style.outline = '3px solid #00f0ff';
+        target.style.outlineOffset = '3px';
+      } else if (lockState === 'paused') {
+        target.style.outline = '2px dashed #64748b';
+        target.style.outlineOffset = '3px';
+      } else {
+        target.style.outline = '3px solid #10b981';
+        target.style.outlineOffset = '3px';
+      }
     }
 
-    if (statusEl && !hasTriggered) {
+    if (!hasTriggered) {
       if (!isEnabled) {
-        statusEl.innerHTML = `<span style="color:#94a3b8;">⏸ 조준 일시정지됨: [${btnText}] (우측 위 ON 버튼을 켜세요)</span>`;
+        setStatusHtml(statusEl, `<span style="color:#94a3b8;">⏸ 조준 일시정지됨: [${btnText}] (우측 위 ON 버튼을 켜세요)</span>`);
       } else if (!ready) {
-        statusEl.innerHTML = `<span style="color:#00f0ff;">🎯 타겟 조준 완료: <strong>[${btnText}]</strong> (오픈 대기 감시 중)</span>`;
+        setStatusHtml(statusEl, `<span style="color:#00f0ff;">🎯 타겟 조준 완료: <strong>[${btnText}]</strong> (오픈 대기 감시 중)</span>`);
       } else {
-        statusEl.innerHTML = `<span style="color:#10b981;">⚡ 버튼 오픈 감지됨: <strong>[${btnText}]</strong></span>`;
+        setStatusHtml(statusEl, `<span style="color:#10b981;">⚡ 버튼 오픈 감지됨: <strong>[${btnText}]</strong></span>`);
       }
     }
   }
@@ -338,23 +353,24 @@
     }
   }
 
-  // MutationObserver for 0ms reaction to attribute or text changes
+  // MutationObserver for 0ms reaction to attribute or text changes (Zero DOM mutation inside callback!)
   function startObserver() {
     if (observer) return;
 
-    observer = new MutationObserver(() => {
-      if (!isEnabled) {
-        updateTargetHighlight();
-        return;
-      }
-      if (!hasTriggered) {
+    observer = new MutationObserver((mutations) => {
+      if (!isEnabled || hasTriggered) return;
+
+      for (let i = 0; i < mutations.length; i++) {
+        const m = mutations[i];
+        if (hudEl && (m.target === hudEl || hudEl.contains(m.target))) {
+          continue;
+        }
         const target = findTargetButton();
         if (target && isButtonReadyToClick(target)) {
           fastClick(target);
           return;
         }
       }
-      updateTargetHighlight();
     });
 
     observer.observe(document.documentElement || document, {
@@ -362,7 +378,7 @@
       subtree: true,
       characterData: true,
       attributes: true,
-      attributeFilter: ['disabled', 'class', 'style', 'aria-disabled']
+      attributeFilter: ['disabled', 'class', 'aria-disabled']
     });
   }
 
@@ -375,6 +391,7 @@
 
   window.addEventListener('beomchro:reset', () => {
     hasTriggered = false;
+    lastStatusHtml = '';
     const boxEl = document.getElementById('beomchro-hud-box');
     if (boxEl && isEnabled) boxEl.style.borderColor = '#00f0ff';
     updateTargetHighlight();
@@ -390,19 +407,17 @@
     scanAndTrigger();
   }
 
-  function pollLoop() {
+  // Periodic UI status refresh & fallback check (every 150ms, zero infinite loop risk)
+  setInterval(() => {
     if (!hudEl && document.body) createHUD();
     if (isEnabled && !hasTriggered) {
       const target = findTargetButton();
       if (target && isButtonReadyToClick(target)) {
         fastClick(target);
+        return;
       }
     }
-    requestAnimationFrame(pollLoop);
-  }
-  requestAnimationFrame(pollLoop);
-
-  // Periodic UI status refresh for countdown timers
-  setInterval(updateTargetHighlight, 250);
+    updateTargetHighlight();
+  }, 150);
 
 })();
